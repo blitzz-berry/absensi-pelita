@@ -1,0 +1,980 @@
+@extends('layouts.app')
+
+@section('title', 'Pengaturan - Sistem Absensi Guru')
+
+@section('styles')
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 260px;
+            background: #ffffff;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.08);
+            z-index: 99;
+            padding-top: 60px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar ul li {
+            margin: 0;
+        }
+        
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: #555;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .sidebar ul li a:hover {
+            background-color: #f0f5ff;
+            color: #1976D2;
+        }
+        
+        .sidebar ul li a.active {
+            background-color: #e3f2fd;
+            color: #1976D2;
+            border-left: 4px solid #1976D2;
+        }
+        
+        .sidebar ul li a i {
+            margin-right: 15px;
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 260px;
+            right: 0;
+            height: 60px;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 98;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            transition: left 0.3s ease;
+        }
+        
+        .main-content {
+            margin-top: 60px;
+            margin-left: 260px;
+            padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .dashboard-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background: #fff;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .profile-menu {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .clock-display {
+            font-size: 18px;
+            font-weight: 500;
+            margin-right: 20px;
+            font-family: 'Courier New', monospace;
+            background: #f5f5f5;
+            padding: 5px 12px;
+            border-radius: 6px;
+        }
+        
+        .welcome-section {
+            margin-bottom: 25px;
+        }
+        
+        .welcome-title {
+            margin: 0 0 5px 0;
+            font-weight: 600;
+            color: #212121;
+        }
+        
+        .welcome-subtitle {
+            margin: 0;
+            color: #757575;
+        }
+        
+        .card-content {
+            padding: 30px;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: #212121;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(135deg, #1976D2, #2196F3);
+            border-radius: 2px;
+        }
+        
+        .setting-section {
+            margin-bottom: 30px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            font-weight: 500;
+            color: #424242;
+        }
+        
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #1976D2;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #1976D2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0d47a1;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #1976D2;
+            color: #1976D2;
+        }
+        
+        .btn-outline:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #424242;
+        }
+        
+        .input-group input, 
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #1976D2;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+        }
+        
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        div.setting-item .setting-control .admin-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        
+        div.setting-item .setting-control .admin-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        div.setting-item .setting-control .admin-switch .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px; /* Radius setengah dari tinggi */
+        }
+        
+        div.setting-item .setting-control .admin-switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        div.setting-item .setting-control .admin-switch input:checked + .slider {
+            background-color: #1976D2;
+        }
+        
+        div.setting-item .setting-control .admin-switch input:checked + .slider:before {
+            transform: translateX(30px); /* 60px - 22px - 4px - 4px = 30px */
+        }
+        
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .setting-control span {
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+        }
+        
+        .toggle-text-off, .toggle-text-on {
+            font-size: 13px;
+            font-weight: 500;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .setting-item .switch {
+            margin-left: 5px;
+            flex-shrink: 0;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 25px;
+            border: 4px solid #e3f2fd;
+        }
+        
+        .profile-info h3 {
+            margin: 0 0 10px 0;
+            color: #212121;
+            font-size: 22px;
+        }
+        
+        .profile-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .profile-info .role {
+            background-color: #e3f2fd;
+            color: #1976D2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        
+        .profile-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: #757575;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .detail-value {
+            font-size: 16px;
+            color: #212121;
+            font-weight: 500;
+        }
+        
+        .file-name-display {
+            color: #757575;
+            font-size: 14px;
+        }
+        
+        .notification {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid transparent;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .topbar {
+                left: 0;
+            }
+            
+            .card-content {
+                padding: 20px;
+            }
+            
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .setting-control {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .form-actions .btn {
+                min-width: auto;
+                width: 100%;
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-avatar {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+@endsection
+
+@section('content')
+    <!-- Sidebar -->
+    @include('admin.components.sidebar')
+    
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="clock-display" id="live-clock">00:00:00</div>
+        <div class="profile-menu dropdown-trigger" data-target="dropdown-profile">
+            <img src="{{ $user->foto_profile ? asset($user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5' }}" 
+                 alt="Profile" class="circle" width="40" height="40">
+            <span style="margin-left: 10px; font-weight: 500;">{{ $user->nama }}</span>
+        </div>
+        <ul id="dropdown-profile" class="dropdown-content">
+            <li><a href="{{ route('admin.profil') }}"><i class="material-icons left">person</i> Profil Saya</a></li>
+            <li><a href="{{ route('admin.pengaturan') }}"><i class="material-icons left">settings</i> Pengaturan</a></li>
+            <li class="divider"></li>
+            <li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="material-icons left">exit_to_app</i> Keluar</a></li>
+        </ul>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="welcome-section">
+            <h4 class="welcome-title">Pengaturan Sistem</h4>
+            <p class="welcome-subtitle">Kelola pengaturan sistem absensi guru</p>
+        </div>
+        
+        <div class="row">
+            <div class="col s12">
+                <div class="card dashboard-card">
+                    <div class="card-content">
+                        <span class="card-title">Pengaturan Umum</span>
+                        
+                        <form action="{{ route('admin.pengaturan.umum.update') }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            
+                            <div class="setting-section">
+                                <div class="setting-item">
+                                    <div class="setting-label">Notifikasi Absensi</div>
+                                    <div class="setting-control">
+                                        <span class="toggle-text-off" style="{{ $settings['notifikasi_absensi'] ? 'color: #999;' : 'color: #1976D2;' }}">Nonaktif</span>
+                                        <label class="admin-switch">
+                                            <input type="checkbox" name="notifikasi_absensi" value="1" {{ $settings['notifikasi_absensi'] ? 'checked' : '' }}>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span class="toggle-text-on" style="{{ $settings['notifikasi_absensi'] ? 'color: #1976D2;' : 'color: #999;' }}">Aktif</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-label">Lokasi Wajib Absen</div>
+                                    <div class="setting-control">
+                                        <label class="admin-switch">
+                                            <input type="checkbox" name="lokasi_wajib" value="1" {{ $settings['lokasi_wajib'] ? 'checked' : '' }}>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-label">Selfie Wajib Absen</div>
+                                    <div class="setting-control">
+                                        <label class="admin-switch">
+                                            <input type="checkbox" name="selfie_wajib" value="1" {{ $settings['selfie_wajib'] ? 'checked' : '' }}>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-label">Waktu Toleransi Keterlambatan</div>
+                                    <div class="setting-control">
+                                        <select name="toleransi_keterlambatan">
+                                            <option value="15" {{ $settings['toleransi_keterlambatan'] == 15 ? 'selected' : '' }}>15 menit</option>
+                                            <option value="30" {{ $settings['toleransi_keterlambatan'] == 30 ? 'selected' : '' }}>30 menit</option>
+                                            <option value="45" {{ $settings['toleransi_keterlambatan'] == 45 ? 'selected' : '' }}>45 menit</option>
+                                            <option value="60" {{ $settings['toleransi_keterlambatan'] == 60 ? 'selected' : '' }}>60 menit</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-label">Waktu Absen Masuk (Mulai)</div>
+                                    <div class="setting-control">
+                                        <input type="time" name="waktu_absen_masuk" value="{{ $settings['waktu_absen_masuk'] }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-label">Waktu Absen Pulang</div>
+                                    <div class="setting-control">
+                                        <input type="time" name="waktu_absen_pulang" value="{{ $settings['waktu_absen_pulang'] }}">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-section">
+                                <div class="input-group">
+                                    <label for="radius_absen">Radius Lokasi Absen (meter)</label>
+                                    <input type="number" name="radius_absen" value="{{ $settings['radius_absen'] }}" min="10" max="200">
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="pesan_pengingat">Pesan Pengingat Absensi</label>
+                                    <input type="text" name="pesan_pengingat" value="{{ $settings['pesan_pengingat'] }}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col s12">
+                <div class="card dashboard-card">
+                    <div class="card-content">
+                        <span class="card-title">Profil & Akun</span>
+                        
+                        <div class="profile-header">
+                            <div class="profile-avatar-container" style="display: flex; align-items: center; margin-bottom: 20px;">
+                                <img src="{{ $user->foto_profile ? asset($user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5' }}" 
+                                     id="profile-display" alt="Profile" class="profile-avatar" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-right: 20px;">
+                                <div class="profile-info">
+                                    <h3 style="margin: 0 0 10px 0; font-size: 18px; color: #212121;">{{ $user->nama }}</h3>
+                                    <p style="margin: 5px 0; color: #666; font-size: 16px;">{{ $user->email }}</p>
+                                    <span class="role" style="background-color: #e3f2fd; color: #1976D2; padding: 4px 12px; border-radius: 20px; font-size: 14px; display: inline-block; margin-top: 8px;">{{ ucfirst($user->role) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; padding: 15px 0; border-top: 1px solid #eee;">
+                            <div class="detail-item">
+                                <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Nama Lengkap</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ $user->nama }}</div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Email</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ $user->email }}</div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Role</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ ucfirst($user->role) }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="showEditProfileForm()">Edit Profil</button>
+                        </div>
+                        
+                        <!-- Form Edit Profil -->
+                        <form id="edit-profile-form" class="edit-profile-form" action="{{ route('admin.pengaturan.akun.update') }}" method="POST" enctype="multipart/form-data" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                            @csrf
+                            @method('PUT')
+                            
+                            <div class="input-group">
+                                <label>Nama Lengkap</label>
+                                <input type="text" name="nama" value="{{ $user->nama }}">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Email</label>
+                                <input type="email" name="email" value="{{ $user->email }}">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Foto Profil</label>
+                                <input type="file" name="foto_profile" id="foto_profile" accept="image/*" style="display: none;" onchange="updateFileName(this); previewImage(event);">
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <button class="btn btn-outline" type="button" onclick="document.getElementById('foto_profile').click()">Pilih Foto</button>
+                                    <span id="file-name" class="file-name-display" style="color: #757575; font-size: 14px;">Tidak ada file dipilih</span>
+                                </div>
+                                <div id="image-preview-container" style="margin-top: 15px; display: none;">
+                                    <img id="image-preview" src="" alt="Pratinjau" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;">
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-outline" onclick="resetProfileForm(); hideEditProfileForm()">Batal</button>
+                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col s12">
+                <div class="card dashboard-card">
+                    <div class="card-content">
+                        <span class="card-title">Ganti Password</span>
+                        
+                        <form id="change-password-form" action="{{ route('admin.pengaturan.password.update') }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            
+                            <div class="input-group">
+                                <label>Password Lama</label>
+                                <input type="password" name="password_lama" id="old_password" required>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Password Baru</label>
+                                <input type="password" name="password_baru" id="new_password" required>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Konfirmasi Password Baru</label>
+                                <input type="password" name="password_baru_confirmation" id="confirm_password" required>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-outline" onclick="resetPasswordForm()">Batal</button>
+                                <button type="submit" class="btn btn-primary">Ganti Password</button>
+                            </div>
+                        </form>
+                        
+                        <!-- Notification Elements -->
+                        <div id="password-notification" class="notification" style="display: none; margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center;">
+                            <span id="notification-message"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('scripts')
+    <script>
+        console.log('Script loaded in pengaturan page');
+        
+        // Initialize dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded in pengaturan page');
+            var elems = document.querySelectorAll('.dropdown-trigger');
+            var instances = M.Dropdown.init(elems, {
+                coverTrigger: false
+            });
+            
+            // Update live clock
+            function updateClock() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                
+                document.getElementById('live-clock').textContent = timeString;
+            }
+            
+            // Update clock immediately and then every second
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Add event listeners to save buttons
+            const saveButtons = document.querySelectorAll('.btn-primary');
+            saveButtons.forEach(button => {
+                // Hanya tambahkan event listener untuk tombol yang bukan tombol ganti password
+                if (!button.closest('#change-password-form')) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        // Show a simple success message
+                        alert('Pengaturan berhasil disimpan!');
+                    });
+                }
+            });
+            
+            // Handle toggle switch text changes
+            const switches = document.querySelectorAll('.admin-switch input[type="checkbox"]');
+            switches.forEach(switchEl => {
+                switchEl.addEventListener('change', function() {
+                    const controlDiv = this.closest('.setting-control');
+                    if (controlDiv) {
+                        const textOff = controlDiv.querySelector('.toggle-text-off');
+                        const textOn = controlDiv.querySelector('.toggle-text-on');
+                        
+                        if (textOff && textOn) {
+                            if (this.checked) {
+                                textOff.style.color = '#999';
+                                textOn.style.color = '#1976D2';
+                            } else {
+                                textOff.style.color = '#1976D2';
+                                textOn.style.color = '#999';
+                            }
+                        }
+                    }
+                });
+                
+                // Initialize text colors based on checkbox state
+                const controlDiv = switchEl.closest('.setting-control');
+                if (controlDiv) {
+                    const textOff = controlDiv.querySelector('.toggle-text-off');
+                    const textOn = controlDiv.querySelector('.toggle-text-on');
+                    
+                    if (textOff && textOn) {
+                        if (switchEl.checked) {
+                            textOff.style.color = '#999';
+                            textOn.style.color = '#1976D2';
+                        } else {
+                            textOff.style.color = '#1976D2';
+                            textOn.style.color = '#999';
+                        }
+                    }
+                }
+            });
+            
+            // Function to show edit profile form
+            function showEditProfileForm() {
+                document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
+                document.querySelector('.form-actions').style.display = 'flex';    // Mengembalikan menjadi flex
+                document.getElementById('edit-profile-form').style.display = 'block';
+            }
+            
+            // Function to hide edit profile form
+            function hideEditProfileForm() {
+                document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
+                document.querySelector('.form-actions').style.display = 'flex';    // Mengembalikan menjadi flex
+                document.getElementById('edit-profile-form').style.display = 'none';
+                document.getElementById('image-preview-container').style.display = 'none';
+            }
+            
+            // Function to update file name display
+            function updateFileName(input) {
+                const fileNameDisplay = document.getElementById('file-name');
+                if (input.files && input.files[0]) {
+                    fileNameDisplay.textContent = input.files[0].name;
+                } else {
+                    fileNameDisplay.textContent = 'Tidak ada file dipilih';
+                }
+            }
+            
+            // Function to preview image
+            function previewImage(event) {
+                const reader = new FileReader();
+                const imagePreviewContainer = document.getElementById('image-preview-container');
+                const imagePreview = document.getElementById('image-preview');
+                
+                reader.onload = function(){
+                    imagePreview.src = reader.result;
+                    imagePreviewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(event.target.files[0]);
+            }
+            
+            // Function to reset profile form and image preview when cancel is clicked
+            function resetProfileForm() {
+                document.getElementById('edit-profile-form').reset();
+                document.getElementById('file-name').textContent = 'Tidak ada file dipilih';
+                document.getElementById('image-preview-container').style.display = 'none';
+                
+                // Reset image preview and hide container
+                document.getElementById('image-preview').src = '';
+            }
+            
+            // Function to submit password form using AJAX
+            function submitPasswordForm() {
+                console.log('submitPasswordForm called');
+                const form = document.getElementById('change-password-form');
+                const formData = new FormData(form);
+                
+                // Debug: Log the form data
+                console.log('Submitting password form data:', {
+                    'password_lama': formData.get('password_lama'),
+                    'password_baru': formData.get('password_baru'),
+                    'password_baru_confirmation': formData.get('password_baru_confirmation')
+                });
+                
+                // Additional debug - check values directly from inputs
+                console.log('Input values directly:', {
+                    'password_lama_val': document.getElementById('old_password')?.value,
+                    'password_baru_val': document.getElementById('new_password')?.value,
+                    'password_baru_confirmation_val': document.getElementById('confirm_password')?.value
+                });
+                
+                // Show loading indicator
+                const submitBtn = document.querySelector('#change-password-form .btn-primary');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Mengganti...';
+                submitBtn.disabled = true;
+                
+                // Tambahkan CSRF token ke formData
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                
+                // Cek dulu apakah CSRF token ada
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('CSRF Token:', csrfToken);
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-HTTP-Method-Override': 'PUT',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    console.log('Password change response status:', response.status);
+                    
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        // If not JSON, return error
+                        return response.text().then(text => {
+                            console.error('Non-JSON response received:', text.substring(0, 200) + '...');
+                            throw new Error('Server response is not in JSON format');
+                        });
+                    }
+                })
+                .then(data => {
+                    console.log('Password change server response:', data);
+                    
+                    // Restore button
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    
+                    // Show notification
+                    showPasswordNotification(data.success, data.message || (data.success ? 'Password berhasil diubah!' : 'Gagal mengganti password.'));
+                    
+                    if (data.success) {
+                        // Reset form on success
+                        form.reset();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in password change:', error);
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    showPasswordNotification(false, 'Terjadi kesalahan saat mengganti password. Silakan coba lagi atau hubungi administrator jika masalah berlanjut.');
+                });
+            }
+            
+            // Function to show password notification
+            function showPasswordNotification(isSuccess, message) {
+                const notification = document.getElementById('password-notification');
+                const notificationMessage = document.getElementById('notification-message');
+                
+                if (isSuccess) {
+                    notification.style.backgroundColor = '#e8f5e9';
+                    notification.style.borderColor = '#4caf50';
+                    notification.style.color = '#2e7d32';
+                } else {
+                    notification.style.backgroundColor = '#ffebee';
+                    notification.style.borderColor = '#f44336';
+                    notification.style.color = '#c62828';
+                }
+                
+                notificationMessage.textContent = message;
+                notification.style.display = 'block';
+                
+                // Hide notification after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+            
+            // Function to reset password form
+            function resetPasswordForm() {
+                document.getElementById('change-password-form').reset();
+                document.getElementById('password-notification').style.display = 'none';
+            }
+            
+            // Add event listener for password form submission
+            console.log('DOMContentLoaded triggered');
+            const passwordForm = document.getElementById('change-password-form');
+            if (passwordForm) {
+                console.log('Password form found, adding event listener');
+                passwordForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('Form submit prevented, calling submitPasswordForm');
+                    submitPasswordForm();
+                });
+            } else {
+                console.log('Password form NOT found!');
+            }
+            
+            @if(session('success'))
+                showPasswordNotification(true, '{{ session('success') }}');
+            @elseif(session('error'))
+                showPasswordNotification(false, '{{ session('error') }}');
+            @endif
+        });
+    </script>
+@endsection
