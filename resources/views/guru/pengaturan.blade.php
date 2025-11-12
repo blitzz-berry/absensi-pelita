@@ -228,6 +228,10 @@
             cursor: pointer;
             border: none;
             transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         
         .btn-primary {
@@ -586,7 +590,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-actions">
+                        <div id="edit-profile-button-container" class="d-flex justify-content-center mt-4">
                             <button type="button" class="btn btn-primary" onclick="showEditProfileForm()">Edit Profil</button>
                         </div>
                         
@@ -613,17 +617,17 @@
                             <div class="input-group">
                                 <label>Foto Profil</label>
                                 <input type="file" name="foto_profile" id="foto_profile" accept="image/*" style="display: none;" onchange="updateFileName(this); previewImage(event);">
-                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2">
                                     <button class="btn btn-outline" type="button" onclick="document.getElementById('foto_profile').click()">Pilih Foto</button>
                                     <button class="btn btn-outline" type="button" id="upload-foto-btn" style="display: none;" onclick="uploadFotoProfil()">Upload Foto</button>
-                                    <span id="file-name" class="file-name-display" style="color: #757575; font-size: 14px;">Tidak ada file dipilih</span>
+                                    <span id="file-name" class="file-name-display">Tidak ada file dipilih</span>
                                 </div>
-                                <div id="image-preview-container" style="margin-top: 15px; display: none;">
-                                    <img id="image-preview" src="{{ $user->foto_profile ? asset('storage/'.$user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5' }}" alt="Pratinjau" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;">
+                                <div id="image-preview-container" class="mt-3 text-center">
+                                    <img id="image-preview" src="{{ $user->foto_profile ? asset('storage/'.$user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5' }}" alt="Pratinjau" class="rounded-circle border border-light" style="width: 100px; height: 100px; object-fit: cover;">
                                 </div>
                             </div>
                             
-                            <div class="form-actions">
+                            <div class="d-flex justify-content-center gap-2 mt-3">
                                 <button type="button" class="btn btn-outline" onclick="resetProfileForm(); hideEditProfileForm()">Batal</button>
                                 <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                             </div>
@@ -658,7 +662,7 @@
                                 <input type="password" name="new_password_confirmation" id="confirm_password" required>
                             </div>
                             
-                            <div class="form-actions">
+                            <div class="d-flex justify-content-center gap-2 mt-3">
                                 <button type="button" class="btn btn-outline" onclick="resetPasswordForm()">Batal</button>
                                 <button type="submit" class="btn btn-primary">Ganti Password</button>
                             </div>
@@ -699,14 +703,14 @@
             // Function to show edit profile form
             function showEditProfileForm() {
                 document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
-                document.querySelector('.form-actions').style.display = 'flex';    // Mengembalikan menjadi flex
+                document.getElementById('edit-profile-button-container').style.display = 'none'; // Sembunyikan tombol Edit Profil
                 document.getElementById('edit-profile-form').style.display = 'block';
             }
             
             // Function to hide edit profile form
             function hideEditProfileForm() {
                 document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
-                document.querySelector('.form-actions').style.display = 'flex';    // Mengembalikan menjadi flex
+                document.getElementById('edit-profile-button-container').style.display = 'flex'; // Tampilkan kembali tombol Edit Profil
                 document.getElementById('edit-profile-form').style.display = 'none';
                 document.getElementById('image-preview-container').style.display = 'none';
             }
@@ -901,9 +905,23 @@
                                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                                         'X-Requested-With': 'XMLHttpRequest',
                                     }
-                                }).then(response => {
-                                    if (!response.ok) throw new Error('Network response was not ok');
-                                    return response.json();
+                                }).then(async response => {
+                                    if (!response.ok) {
+                                        const errorText = await response.text();
+                                        console.error('Error response:', errorText);
+                                        throw new Error(`Network response was not ok: ${response.status}`);
+                                    }
+                                    
+                                    // Check if response is JSON
+                                    const contentType = response.headers.get('content-type');
+                                    if (contentType && contentType.includes('application/json')) {
+                                        return response.json();
+                                    } else {
+                                        // If not JSON, try to parse as text and create an error response
+                                        const text = await response.text();
+                                        console.error('Non-JSON response received:', text);
+                                        throw new Error('Server response is not in JSON format');
+                                    }
                                 });
                             } else {
                                 // If only photo was updated, return the photo response
@@ -984,9 +1002,23 @@
                                 'X-Requested-With': 'XMLHttpRequest',
                             }
                         })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.json();
+                        .then(async response => {
+                            if (!response.ok) {
+                                const errorText = await response.text();
+                                console.error('Error response:', errorText);
+                                throw new Error(`Network response was not ok: ${response.status}`);
+                            }
+                            
+                            // Check if response is JSON
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                return response.json();
+                            } else {
+                                // If not JSON, try to parse as text and create an error response
+                                const text = await response.text();
+                                console.error('Non-JSON response received:', text);
+                                throw new Error('Server response is not in JSON format');
+                            }
                         })
                         .then(data => {
                             // Restore button
@@ -1050,14 +1082,14 @@
         
         function showEditProfileForm() {
             document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
-            document.querySelector('.form-actions').style.display = 'flex';    // Mengembalikan menjadi flex
+            document.getElementById('edit-profile-button-container').style.display = 'none'; // Sembunyikan tombol Edit Profil
             document.getElementById('edit-profile-form').style.display = 'block';
         }
         
         // Function to hide edit profile form
         function hideEditProfileForm() {
             document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
-            document.querySelector('.form-actions').style.display = 'flex';    // Mengembalikan menjadi flex
+            document.getElementById('edit-profile-button-container').style.display = 'flex'; // Tampilkan kembali tombol Edit Profil
             document.getElementById('edit-profile-form').style.display = 'none';
             document.getElementById('image-preview-container').style.display = 'none';
         }

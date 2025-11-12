@@ -228,6 +228,10 @@
             cursor: pointer;
             border: none;
             transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         
         .btn-primary {
@@ -595,7 +599,7 @@
                                 </div>
                             </div>
                             
-                            <div class="form-actions">
+                            <div class="d-flex justify-content-center mt-3">
                                 <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
                             </div>
                         </form>
@@ -639,7 +643,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-actions">
+                        <div id="edit-profile-button-container" class="d-flex justify-content-center mt-4">
                             <button type="button" class="btn btn-primary" onclick="showEditProfileForm()">Edit Profil</button>
                         </div>
                         
@@ -661,16 +665,16 @@
                             <div class="input-group">
                                 <label>Foto Profil</label>
                                 <input type="file" name="foto_profile" id="foto_profile" accept="image/*" style="display: none;" onchange="updateFileName(this); previewImage(event);">
-                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2">
                                     <button class="btn btn-outline" type="button" onclick="document.getElementById('foto_profile').click()">Pilih Foto</button>
-                                    <span id="file-name" class="file-name-display" style="color: #757575; font-size: 14px;">Tidak ada file dipilih</span>
+                                    <span id="file-name" class="file-name-display">Tidak ada file dipilih</span>
                                 </div>
                                 <div id="image-preview-container" style="margin-top: 15px; display: none;">
                                     <img id="image-preview" src="" alt="Pratinjau" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;">
                                 </div>
                             </div>
                             
-                            <div class="form-actions">
+                            <div class="d-flex justify-content-center gap-2 mt-3">
                                 <button type="button" class="btn btn-outline" onclick="resetProfileForm(); hideEditProfileForm()">Batal</button>
                                 <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                             </div>
@@ -705,7 +709,7 @@
                                 <input type="password" name="password_baru_confirmation" id="confirm_password" required>
                             </div>
                             
-                            <div class="form-actions">
+                            <div class="d-flex justify-content-center gap-2 mt-3">
                                 <button type="button" class="btn btn-outline" onclick="resetPasswordForm()">Batal</button>
                                 <button type="submit" class="btn btn-primary">Ganti Password</button>
                             </div>
@@ -725,7 +729,21 @@
 @section('scripts')
     <script>
         console.log('Script loaded in pengaturan page');
+
+        // Define global functions immediately to ensure they exist for onclick handlers
+        // Define placeholder functions to ensure they exist for onclick handlers
+        if (typeof window.showEditProfileForm === 'undefined') {
+            window.showEditProfileForm = function() {
+                console.log('Please wait, page still loading...');
+            };
+        }
         
+        if (typeof window.hideEditProfileForm === 'undefined') {
+            window.hideEditProfileForm = function() {
+                console.log('Please wait, page still loading...');
+            };
+        }
+
         // Initialize dropdown
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContentLoaded in pengaturan page');
@@ -801,14 +819,14 @@
             // Function to show edit profile form
             function showEditProfileForm() {
                 document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
-                document.querySelector('.form-actions').style.display = 'flex';    // Mengembalikan menjadi flex
+                document.getElementById('edit-profile-button-container').style.display = 'none'; // Sembunyikan tombol Edit Profil
                 document.getElementById('edit-profile-form').style.display = 'block';
             }
             
             // Function to hide edit profile form
             function hideEditProfileForm() {
                 document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
-                document.querySelector('.form-actions').style.display = 'flex';    // Mengembalikan menjadi flex
+                document.getElementById('edit-profile-button-container').style.display = 'flex'; // Tampilkan kembali tombol Edit Profil
                 document.getElementById('edit-profile-form').style.display = 'none';
                 document.getElementById('image-preview-container').style.display = 'none';
             }
@@ -975,6 +993,40 @@
             @elseif(session('error'))
                 showPasswordNotification(false, '{{ session('error') }}');
             @endif
+            
+            // Replace global functions with actual implementations
+            window.showEditProfileForm = function() {
+                document.querySelector('.profile-details').style.display = 'grid';
+                document.getElementById('edit-profile-button-container').style.display = 'none';
+                document.getElementById('edit-profile-form').style.display = 'block';
+            };
+            
+            window.hideEditProfileForm = function() {
+                document.querySelector('.profile-details').style.display = 'grid';
+                document.getElementById('edit-profile-button-container').style.display = 'flex';
+                document.getElementById('edit-profile-form').style.display = 'none';
+                document.getElementById('image-preview-container').style.display = 'none';
+            };
+            
+        
+            
+            // Store references to functions in global variables
+            showEditProfileFormGlobal = showEditProfileForm;
+            hideEditProfileFormGlobal = hideEditProfileForm;
+            
         });
+        
+        // Global functions for inline onclick handlers
+        function showEditProfileForm() {
+            if (typeof showEditProfileFormGlobal === 'function') {
+                showEditProfileFormGlobal();
+            }
+        }
+        
+        function hideEditProfileForm() {
+            if (typeof hideEditProfileFormGlobal === 'function') {
+                hideEditProfileFormGlobal();
+            }
+        }
     </script>
 @endsection

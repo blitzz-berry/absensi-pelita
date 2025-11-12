@@ -213,7 +213,8 @@
         .date-navigation {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 20px;
             margin-bottom: 20px;
         }
         
@@ -226,6 +227,10 @@
             cursor: pointer;
             font-size: 14px;
             transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         
         .date-navigation-btn:hover {
@@ -376,7 +381,6 @@
                                 <th>Jam Masuk</th>
                                 <th>Jam Pulang</th>
                                 <th>Status</th>
-                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -394,15 +398,10 @@
                                         {{ $absensi->jam_masuk ? ucfirst($absensi->status) : 'Belum Absen' }}
                                     </span>
                                 </td>
-                                <td>
-                                    <a href="#" class="btn btn-small" style="background: #1976D2; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">
-                                        Detail
-                                    </a>
-                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 20px; color: #9e9e9e;">
+                                <td colspan="5" style="text-align: center; padding: 20px; color: #9e9e9e;">
                                     Belum ada data absensi dalam 7 hari terakhir
                                 </td>
                             </tr>

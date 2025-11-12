@@ -351,9 +351,6 @@
         <div class="welcome-section">
             <h4 class="welcome-title">Pengajuan Izin/Sakit</h4>
             <p class="welcome-subtitle">Ajukan izin atau sakit dengan mengisi formulir di bawah ini</p>
-            <a href="{{ route('guru.lokasi.saya') }}" class="btn btn-primary" style="margin-top: 10px; text-decoration: none; display: inline-block;">
-                <i class="material-icons left">location_on</i> Lihat Lokasi Saya
-            </a>
         </div>
         
         <div class="row">
