@@ -3,6 +3,9 @@
 @endphp
 
 <div class="sidebar">
+    <div style="padding: 0 10px 5px 10px; text-align: center; border-bottom: 1px solid #eee; display: flex; justify-content: center; align-items: center; margin-top: -60px;">
+        <img src="{{ asset('image/logo-pelita.png') }}" alt="Logo Pelita" style="width: 140px; height: 140px; object-fit: contain;">
+    </div>
     <ul>
         <li><a href="{{ route('admin.dashboard') }}" @if(strpos($currentRoute, 'admin.dashboard') !== false) class="active" @endif>
             <i class="material-icons">dashboard</i> Dashboard

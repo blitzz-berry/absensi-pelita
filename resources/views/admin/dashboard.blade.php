@@ -20,7 +20,7 @@
             background: #ffffff;
             box-shadow: 3px 0 15px rgba(0,0,0,0.08);
             z-index: 99;
-            padding-top: 60px;
+            padding-top: 0;
             transition: all 0.3s ease;
         }
         

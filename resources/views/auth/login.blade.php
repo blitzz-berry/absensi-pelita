@@ -1,11 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Login - Sistem Absensi Guru')
+@section('title', 'Login - absensi guru pelita')
 
 @section('styles')
     <style>
         body {
-            background: linear-gradient(135deg, #1976D2, #42A5F5);
+            background: url('{{ asset('image/sekolah.png') }}') no-repeat center center fixed;
+            background-size: cover;
             font-family: 'Roboto', sans-serif;
             min-height: 100vh;
             display: flex;
@@ -19,29 +20,19 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            max-width: 1000px;
             margin: 0 auto;
         }
         
         .login-card {
             background: white;
             border-radius: 16px;
-            padding: 40px;
+            padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
             margin: 0 20px;
         }
         
-        .welcome-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 40px;
-            color: white;
-            margin: 0 20px;
-            text-align: center;
-            flex: 1;
-        }
         
         .logo-container {
             text-align: center;
@@ -49,17 +40,19 @@
         }
         
         .logo {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #1976D2, #2196F3);
-            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            color: white;
-            font-size: 40px;
-            box-shadow: 0 5px 15px rgba(25, 118, 210, 0.4);
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 0;
         }
         
         .input-field {
@@ -154,35 +147,10 @@
 
 @section('content')
     <div class="login-container">
-        <div class="welcome-section">
-            <h2 class="welcome-title">Sistem Absensi Guru</h2>
-            <p class="welcome-subtitle">PLUS Pelita Insani</p>
-            <p>Lacak kehadiran guru secara digital, real-time, dan aman</p>
-            
-            <div class="features">
-                <div class="feature-item">
-                    <i class="material-icons">check_circle</i>
-                    <span>Validasi Lokasi (GPS)</span>
-                </div>
-                <div class="feature-item">
-                    <i class="material-icons">camera_alt</i>
-                    <span>Ambil Foto Saat Absen</span>
-                </div>
-                <div class="feature-item">
-                    <i class="material-icons">location_on</i>
-                    <span>Peta Lokasi Guru</span>
-                </div>
-                <div class="feature-item">
-                    <i class="material-icons">event_note</i>
-                    <span>Sistem Izin & Sakit</span>
-                </div>
-            </div>
-        </div>
-        
         <div class="login-card">
             <div class="logo-container">
                 <div class="logo">
-                    <i class="material-icons">school</i>
+                    <img src="{{ asset('image/logo-pelita.png') }}" alt="Logo Pelita" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 <h4 class="center-align" style="color: #333; margin: 0;">Selamat Datang</h4>
                 <p class="center-align grey-text" style="margin-top: 5px;">Silakan masuk ke akun Anda</p>
@@ -191,30 +159,44 @@
             <form method="POST" action="{{ route('login.process') }}">
                 @csrf
                 <div class="input-field">
-                    <input id="login_field" type="text" name="login_field" value="{{ old('login_field') }}" required autocomplete="off" placeholder="Masukkan Email atau Nomor ID">
+                    <input id="login_field" type="text" name="login_field" value="{{ old('login_field') }}" required autocomplete="off" placeholder="Masukkan Nomor ID">
                     @error('login_field')
                         <div class="error-message">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="input-field">
-                    <input id="password" type="password" name="password" required placeholder="Masukkan Password">
+                    <div style="position: relative;">
+                        <input id="password" type="password" name="password" required placeholder="Masukkan Password">
+                        <span style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer;" onclick="togglePassword()">
+                            <i class="material-icons" id="togglePasswordIcon">visibility</i>
+                        </span>
+                    </div>
                     @error('password')
                         <div class="error-message">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center;">
+                        <input type="checkbox" name="remember" id="remember" style="margin-right: 8px;">
+                        <span style="color: #333; font-size: 14px;">Ingat Saya</span>
+                    </label>
+                    <a href="#" class="forgot-password">Lupa kata sandi?</a>
+                </div>
+
                 <button type="submit" class="btn-login">
                     <i class="material-icons left">login</i> Masuk
                 </button>
-                
-                <a href="#" class="forgot-password">Lupa kata sandi?</a>
             </form>
         </div>
     </div>
 @endsection
 
 @section('scripts')
+    <!-- Load jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
         // Set CSRF token untuk semua request AJAX
         $.ajaxSetup({
@@ -222,7 +204,20 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-        
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('togglePasswordIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.textContent = 'visibility_off';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.textContent = 'visibility';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Tambahkan efek ripple pada tombol login
             const loginBtn = document.querySelector('.btn-login');
@@ -231,7 +226,7 @@
                     const ripple = document.createElement('span');
                     ripple.classList.add('ripple');
                     this.appendChild(ripple);
-                    
+
                     setTimeout(() => {
                         ripple.remove();
                     }, 600);

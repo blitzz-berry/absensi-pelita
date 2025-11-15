@@ -20,7 +20,7 @@
             background: #ffffff;
             box-shadow: 3px 0 15px rgba(0,0,0,0.08);
             z-index: 99;
-            padding-top: 60px;
+            padding-top: 0;
             transition: all 0.3s ease;
         }
         
@@ -504,6 +504,9 @@
 @section('content')
     <!-- Sidebar -->
     <div class="sidebar">
+        <div style="padding: 0 10px 5px 10px; text-align: center; border-bottom: 1px solid #eee; display: flex; justify-content: center; align-items: center; margin-top: -60px;">
+            <img src="{{ asset('image/logo-pelita.png') }}" alt="Logo Pelita" style="width: 140px; height: 140px; object-fit: contain;">
+        </div>
         <ul>
             <li><a href="{{ route('dashboard') }}" @if(request()->routeIs('dashboard')) class="active" @endif><i class="material-icons">dashboard</i> Dashboard</a></li>
             <li><a href="{{ route('guru.absensi.harian') }}" @if(request()->routeIs('guru.absensi.harian')) class="active" @endif><i class="material-icons">calendar_today</i> Absensi Harian</a></li>

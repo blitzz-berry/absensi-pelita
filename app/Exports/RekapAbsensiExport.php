@@ -43,7 +43,9 @@ class RekapAbsensiExport implements FromCollection, WithHeadings, WithMapping, W
             'Jumlah Izin',
             'Jumlah Sakit',
             'Jumlah Alpha',
-            'Total Kehadiran'
+            'Total Kehadiran',
+            'Uang Makan (Rp)',
+            'Uang Transport (Rp)'
         ];
     }
 
@@ -59,7 +61,9 @@ class RekapAbsensiExport implements FromCollection, WithHeadings, WithMapping, W
             $rekap->jumlah_izin,
             $rekap->jumlah_sakit,
             $rekap->jumlah_alpha,
-            $rekap->jumlah_hadir + $rekap->jumlah_terlambat + $rekap->jumlah_izin + $rekap->jumlah_sakit + $rekap->jumlah_alpha
+            $rekap->jumlah_hadir + $rekap->jumlah_terlambat + $rekap->jumlah_izin + $rekap->jumlah_sakit + $rekap->jumlah_alpha,
+            10000,  // Uang makan
+            12500   // Uang transport
         ];
     }
 
