@@ -469,9 +469,15 @@
             $fotoProfileUrl = $user->foto_profile ? asset('storage/'.$user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5';
         @endphp
         <div class="profile-menu dropdown-trigger" data-target="dropdown-profile">
-            <img src="{{ $fotoProfileUrl }}" 
+            <img src="{{ $fotoProfileUrl }}"
                  alt="Profile" class="circle" width="40" height="40">
-            <span style="margin-left: 10px; font-weight: 500;">{{ $user->nama }}</span>
+            <span style="margin-left: 10px; font-weight: 500;">
+                @if($user->gelar)
+                    {{ $user->nama }} {{ $user->gelar }}
+                @else
+                    {{ $user->nama }}
+                @endif
+            </span>
         </div>
         <ul id="dropdown-profile" class="dropdown-content">
             <li><a href="{{ route('guru.profil.saya') }}"><i class="material-icons left">person</i> Profil Saya</a></li>
@@ -487,7 +493,13 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="welcome-section">
-            <h4 class="welcome-title">Selamat Datang, {{ $user->nama }}</h4>
+            <h4 class="welcome-title">Selamat Datang,
+                @if($user->gelar)
+                    {{ $user->nama }} {{ $user->gelar }}
+                @else
+                    {{ $user->nama }}
+                @endif
+            </h4>
             <p class="welcome-subtitle">Dashboard Guru - Sistem Absensi Guru</p>
         </div>
         

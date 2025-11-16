@@ -16,14 +16,27 @@ class GuruController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         if ($user->role !== 'admin') {
             abort(403, 'Unauthorized');
         }
-        
-        $guru = User::where('role', 'guru')->get();
+
+        $query = User::where('role', 'guru');
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_id', 'LIKE', "%{$search}%")
+                  ->orWhere('nama', 'LIKE', "%{$search}%")
+                  ->orWhere('jabatan', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $guru = $query->paginate(10);
+        $guru->appends(['search' => $request->search]); // Menyimpan parameter pencarian saat paginasi
+
         return view('admin.data-guru', ['guru' => $guru, 'currentUser' => $user]);
     }
 
@@ -53,9 +66,11 @@ class GuruController extends Controller
         $validator = Validator::make($request->all(), [
             'nomor_id' => 'required|unique:users,nomor_id',
             'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'nomor_telepon' => 'nullable|string|max:15',
+            'nomor_telepon' => 'required|string|max:15',
+            'jabatan' => 'nullable|string|max:255',
+            'gelar' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -71,6 +86,8 @@ class GuruController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'guru',
             'nomor_telepon' => $request->nomor_telepon,
+            'jabatan' => $request->jabatan,
+            'gelar' => $request->gelar,
         ]);
 
         return redirect()->route('admin.data-guru')->with('success', 'Guru berhasil ditambahkan');
@@ -105,9 +122,11 @@ class GuruController extends Controller
         $validator = Validator::make($request->all(), [
             'nomor_id' => 'required|unique:users,nomor_id,'.$id,
             'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$id,
+            'email' => 'nullable|email|unique:users,email,'.$id,
             'password' => 'nullable|string|min:6',
-            'nomor_telepon' => 'nullable|string|max:15',
+            'nomor_telepon' => 'required|string|max:15',
+            'jabatan' => 'nullable|string|max:255',
+            'gelar' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -121,6 +140,8 @@ class GuruController extends Controller
             'nama' => $request->nama,
             'email' => $request->email,
             'nomor_telepon' => $request->nomor_telepon,
+            'jabatan' => $request->jabatan,
+            'gelar' => $request->gelar,
         ];
 
         if ($request->password) {
@@ -431,17 +452,18 @@ class GuruController extends Controller
             ->where('bulan', $bulan)
             ->where('tahun', $tahun)
             ->get();
-        
+
         return view('admin.rekap-absensi', [
-            'guru' => $guru, 
-            'absensi' => $absensi, 
+            'guru' => $guru,
+            'absensi' => $absensi,
             'rekap_absensi' => $rekap_absensi,
             'bulan' => $bulan,
             'tahun' => $tahun,
             'currentUser' => $user
         ]);
     }
-    
+
+
     /**
      * Generate rekap absensi untuk bulan dan tahun tertentu (tanpa redirect)
      */

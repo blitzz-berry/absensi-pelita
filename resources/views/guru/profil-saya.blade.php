@@ -222,24 +222,28 @@
             transition: all 0.3s ease;
             font-size: 14px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
-        
+
         .btn-primary {
             background-color: #1976D2;
             color: white;
         }
-        
+
         .btn-primary:hover {
             background-color: #1565C0;
             box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
         }
-        
+
         .btn-outline {
             background-color: white;
             border: 1px solid #e0e0e0;
             color: #666;
         }
-        
+
         .btn-outline:hover {
             background-color: #f5f5f5;
             color: #333;
@@ -326,6 +330,7 @@
                 width: 100%;
                 margin-left: 0;
                 margin-top: 10px;
+                justify-content: center; /* Memastikan teks tetap di tengah dalam mode mobile */
             }
             
             .form-actions {
@@ -396,7 +401,13 @@
                             <div class="profile-details">
                                 <div class="detail-item">
                                     <div class="detail-label">Nama Lengkap</div>
-                                    <div class="detail-value">{{ $user->nama ?? '-' }}</div>
+                                    <div class="detail-value">
+                                        @if($user->gelar)
+                                            {{ $user->nama }} {{ $user->gelar }}
+                                        @else
+                                            {{ $user->nama ?? '-' }}
+                                        @endif
+                                    </div>
                                 </div>
                                 
                                 <div class="detail-item">
@@ -413,12 +424,18 @@
                                     <div class="detail-label">Nomor Telepon</div>
                                     <div class="detail-value">{{ $user->nomor_telepon ?? '-' }}</div>
                                 </div>
-                                
+
+
                                 <div class="detail-item">
                                     <div class="detail-label">Role</div>
                                     <div class="detail-value">{{ ucfirst($user->role ?? 'guru') }}</div>
                                 </div>
                                 
+                                <div class="detail-item">
+                                    <div class="detail-label">Jabatan</div>
+                                    <div class="detail-value">{{ $user->jabatan ?? '-' }}</div>
+                                </div>
+
                                 <div class="detail-item">
                                     <div class="detail-label">Tanggal Bergabung</div>
                                     <div class="detail-value">{{ $user->created_at ? \Carbon\Carbon::parse($user->created_at)->format('d M Y') : '-' }}</div>
@@ -464,13 +481,19 @@
                                 </div>
                                 
                                 <div class="input-group">
-                                    <label>Nomor Telepon</label>
-                                    <input type="text" name="nomor_telepon" value="{{ $user->nomor_telepon ?? '' }}">
+                                    <label>Nomor Telepon *</label>
+                                    <input type="text" name="nomor_telepon" value="{{ $user->nomor_telepon ?? '' }}" required>
                                 </div>
-                                
+
+
                                 <div class="input-group">
                                     <label>Role</label>
                                     <input type="text" value="{{ ucfirst($user->role ?? 'guru') }}" disabled>
+                                </div>
+
+                                <div class="input-group">
+                                    <label>Jabatan</label>
+                                    <input type="text" name="jabatan" value="{{ $user->jabatan ?? '' }}">
                                 </div>
                                 
                                 <div class="input-group">

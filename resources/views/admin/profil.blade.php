@@ -222,6 +222,10 @@
             transition: all 0.3s ease;
             font-size: 14px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         
         .btn-primary {
@@ -326,6 +330,7 @@
                 width: 100%;
                 margin-left: 0;
                 margin-top: 10px;
+                justify-content: center; /* Memastikan teks tetap di tengah dalam mode mobile */
             }
             
             .form-actions {

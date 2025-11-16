@@ -322,10 +322,29 @@
                         @enderror
                     </div>
                     
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nomor_telepon">Nomor Telepon *</label>
+                            <input type="text" class="form-control" id="nomor_telepon" name="nomor_telepon" value="{{ old('nomor_telepon', $guru->nomor_telepon) }}" required>
+                            @error('nomor_telepon')
+                                <div class="error-message">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jabatan">Jabatan</label>
+                            <input type="text" class="form-control" id="jabatan" name="jabatan" value="{{ old('jabatan', $guru->jabatan) }}">
+                            @error('jabatan')
+                                <div class="error-message">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label for="nomor_telepon">Nomor Telepon</label>
-                        <input type="text" class="form-control" id="nomor_telepon" name="nomor_telepon" value="{{ old('nomor_telepon', $guru->nomor_telepon) }}">
-                        @error('nomor_telepon')
+                        <label for="gelar">Gelar</label>
+                        <input type="text" class="form-control" id="gelar" name="gelar" value="{{ old('gelar', $guru->gelar) }}" placeholder="Contoh: S.Pd, S.T, S.Ag">
+                        @error('gelar')
                             <div class="error-message">{{ $message }}</div>
                         @enderror
                     </div>

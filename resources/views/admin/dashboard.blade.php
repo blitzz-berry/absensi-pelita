@@ -288,7 +288,13 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="welcome-section">
-            <h4 class="welcome-title">Selamat Datang, {{ $user->nama }}</h4>
+            <h4 class="welcome-title">Selamat Datang,
+                @if($user->gelar)
+                    {{ $user->nama }} {{ $user->gelar }}
+                @else
+                    {{ $user->nama }}
+                @endif
+            </h4>
             <p class="welcome-subtitle">Dashboard Admin - Sistem Absensi Guru PLUS Pelita Insani</p>
         </div>
         

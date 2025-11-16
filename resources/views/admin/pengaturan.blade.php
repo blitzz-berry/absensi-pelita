@@ -650,18 +650,18 @@
                         <!-- Form Edit Profil -->
                         <form id="edit-profile-form" class="edit-profile-form" action="{{ route('admin.pengaturan.akun.update') }}" method="POST" enctype="multipart/form-data" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
                             @csrf
-                            @method('PUT')
-                            
+                            <!-- Note: Method override will be handled in JavaScript -->
+
                             <div class="input-group">
                                 <label>Nama Lengkap</label>
                                 <input type="text" name="nama" value="{{ $user->nama }}">
                             </div>
-                            
+
                             <div class="input-group">
                                 <label>Email</label>
                                 <input type="email" name="email" value="{{ $user->email }}">
                             </div>
-                            
+
                             <div class="input-group">
                                 <label>Foto Profil</label>
                                 <input type="file" name="foto_profile" id="foto_profile" accept="image/*" style="display: none;" onchange="updateFileName(this); previewImage(event);">
@@ -673,7 +673,7 @@
                                     <img id="image-preview" src="" alt="Pratinjau" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;">
                                 </div>
                             </div>
-                            
+
                             <div class="d-flex justify-content-center gap-2 mt-3">
                                 <button type="button" class="btn btn-outline" onclick="resetProfileForm(); hideEditProfileForm()">Batal</button>
                                 <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
@@ -692,7 +692,7 @@
                         
                         <form id="change-password-form" action="{{ route('admin.pengaturan.password.update') }}" method="POST">
                             @csrf
-                            @method('PUT')
+                            <!-- Note: Method override will be handled in JavaScript -->
                             
                             <div class="input-group">
                                 <label>Password Lama</label>
@@ -864,39 +864,129 @@
                 document.getElementById('image-preview').src = '';
             }
             
+            // Function to submit profile form using AJAX
+            function submitProfileForm() {
+                console.log('submitProfileForm called');
+                const form = document.getElementById('edit-profile-form');
+                const formData = new FormData(form);
+
+                // Debug: Log the form data (excluding file objects for safety)
+                console.log('Submitting profile form data:', {
+                    'nama': formData.get('nama'),
+                    'email': formData.get('email'),
+                    'has_foto_profile': formData.get('foto_profile') ? 'Yes' : 'No'
+                });
+
+                // Show loading indicator
+                const submitBtn = document.querySelector('#edit-profile-form .btn-primary');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Menyimpan...';
+                submitBtn.disabled = true;
+
+                // Tambahkan CSRF token ke formData
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+                // Cek dulu apakah CSRF token ada
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('CSRF Token:', csrfToken);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-HTTP-Method-Override': 'PUT',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    console.log('Profile update response status:', response.status);
+
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        // If not JSON, return error
+                        return response.text().then(text => {
+                            console.error('Non-JSON response received:', text.substring(0, 200) + '...');
+                            throw new Error('Server response is not in JSON format');
+                        });
+                    }
+                })
+                .then(data => {
+                    console.log('Profile update server response:', data);
+
+                    // Restore button
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+
+                    if (data.success) {
+                        // Update profile display with new values
+                        if (data.user) {
+                            document.getElementById('profile-display').src = data.user.foto_profile || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.nama)}&color=1976D2&background=F5F5F5`;
+
+                            // Update profile header
+                            document.querySelector('#edit-profile-form + div .detail-value:first-child').textContent = data.user.nama;
+                            document.querySelector('#edit-profile-form + div .detail-value:nth-child(2)').textContent = data.user.email;
+
+                            // Update profile menu in topbar
+                            document.querySelector('.profile-menu span').textContent = data.user.nama;
+                            if (data.user.foto_profile) {
+                                document.querySelector('.profile-menu img').src = data.user.foto_profile;
+                            }
+                        }
+
+                        // Show success notification
+                        showNotification(true, data.message || 'Profil berhasil diperbarui!');
+
+                        // Hide form and show profile view
+                        hideEditProfileForm();
+                    } else {
+                        showNotification(false, data.message || 'Gagal memperbarui profil.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in profile update:', error);
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    showNotification(false, 'Terjadi kesalahan saat memperbarui profil. Silakan coba lagi atau hubungi administrator jika masalah berlanjut.');
+                });
+            }
+
             // Function to submit password form using AJAX
             function submitPasswordForm() {
                 console.log('submitPasswordForm called');
                 const form = document.getElementById('change-password-form');
                 const formData = new FormData(form);
-                
+
                 // Debug: Log the form data
                 console.log('Submitting password form data:', {
                     'password_lama': formData.get('password_lama'),
                     'password_baru': formData.get('password_baru'),
                     'password_baru_confirmation': formData.get('password_baru_confirmation')
                 });
-                
+
                 // Additional debug - check values directly from inputs
                 console.log('Input values directly:', {
                     'password_lama_val': document.getElementById('old_password')?.value,
                     'password_baru_val': document.getElementById('new_password')?.value,
                     'password_baru_confirmation_val': document.getElementById('confirm_password')?.value
                 });
-                
+
                 // Show loading indicator
                 const submitBtn = document.querySelector('#change-password-form .btn-primary');
                 const originalText = submitBtn.textContent;
                 submitBtn.textContent = 'Mengganti...';
                 submitBtn.disabled = true;
-                
+
                 // Tambahkan CSRF token ke formData
                 formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-                
+
                 // Cek dulu apakah CSRF token ada
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 console.log('CSRF Token:', csrfToken);
-                
+
                 fetch(form.action, {
                     method: 'POST',
                     body: formData,
@@ -908,7 +998,7 @@
                 })
                 .then(response => {
                     console.log('Password change response status:', response.status);
-                    
+
                     // Check if response is JSON
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
@@ -923,14 +1013,14 @@
                 })
                 .then(data => {
                     console.log('Password change server response:', data);
-                    
+
                     // Restore button
                     submitBtn.textContent = originalText;
                     submitBtn.disabled = false;
-                    
+
                     // Show notification
                     showPasswordNotification(data.success, data.message || (data.success ? 'Password berhasil diubah!' : 'Gagal mengganti password.'));
-                    
+
                     if (data.success) {
                         // Reset form on success
                         form.reset();
@@ -974,8 +1064,57 @@
                 document.getElementById('password-notification').style.display = 'none';
             }
             
-            // Add event listener for password form submission
+            // Function to show notification for profile updates
+            function showNotification(isSuccess, message) {
+                // Create notification element if it doesn't exist
+                let notification = document.getElementById('profile-notification');
+                if (!notification) {
+                    notification = document.createElement('div');
+                    notification.id = 'profile-notification';
+                    notification.className = 'notification';
+                    notification.style.cssText = 'display: none; margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center;';
+                    document.querySelector('#edit-profile-form').appendChild(notification);
+                }
+
+                const notificationMessage = document.createElement('span');
+                notificationMessage.id = 'profile-notification-message';
+
+                if (isSuccess) {
+                    notification.style.backgroundColor = '#e8f5e9';
+                    notification.style.borderColor = '#4caf50';
+                    notification.style.color = '#2e7d32';
+                } else {
+                    notification.style.backgroundColor = '#ffebee';
+                    notification.style.borderColor = '#f44336';
+                    notification.style.color = '#c62828';
+                }
+
+                notificationMessage.textContent = message;
+                notification.innerHTML = '';
+                notification.appendChild(notificationMessage);
+                notification.style.display = 'block';
+
+                // Hide notification after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+
+            // Add event listener for profile form submission
             console.log('DOMContentLoaded triggered');
+            const profileForm = document.getElementById('edit-profile-form');
+            if (profileForm) {
+                console.log('Profile form found, adding event listener');
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('Profile form submit prevented, calling submitProfileForm');
+                    submitProfileForm();
+                });
+            } else {
+                console.log('Profile form NOT found!');
+            }
+
+            // Add event listener for password form submission
             const passwordForm = document.getElementById('change-password-form');
             if (passwordForm) {
                 console.log('Password form found, adding event listener');

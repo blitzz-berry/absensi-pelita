@@ -204,12 +204,35 @@
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #e0e0e0;
+            white-space: nowrap; /* Mencegah teks terpecah */
         }
-        
+
         th {
             background-color: #f5f5f5;
             font-weight: 600;
             color: #555;
+        }
+
+        /* Sesuaikan lebar kolom agar informasi terlihat jelas */
+        th:nth-child(1), td:nth-child(1) { /* Kolom Nomor ID */
+            width: 15%;
+        }
+
+        th:nth-child(2), td:nth-child(2) { /* Kolom Nama Guru */
+            width: 35%;
+        }
+
+        th:nth-child(3), td:nth-child(3) { /* Kolom Jabatan */
+            width: 25%;
+        }
+
+        th:nth-child(4), td:nth-child(4) { /* Kolom Status */
+            width: 15%;
+        }
+
+        th:nth-child(5), td:nth-child(5) { /* Kolom Aksi */
+            width: 10%;
+            text-align: center;
         }
         
         tr:hover {
@@ -262,23 +285,32 @@
             margin-top: 20px;
             gap: 5px;
         }
-        
-        .pagination a, .pagination span {
+
+        .pagination a, .pagination .active, .pagination .pagination-arrow {
             padding: 8px 15px;
             text-decoration: none;
             border: 1px solid #e0e0e0;
             border-radius: 4px;
             color: #555;
         }
-        
+
         .pagination .active {
             background-color: #1976D2;
             color: white;
             border-color: #1976D2;
         }
-        
+
         .pagination a:hover:not(.active) {
             background-color: #f5f5f5;
+        }
+
+        .pagination .disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pagination .disabled:hover {
+            background-color: transparent;
         }
     </style>
 @endsection
@@ -300,12 +332,16 @@
         <div class="card dashboard-card">
             <div class="card-content">
                 <div class="action-buttons">
-                    <a href="{{ route('admin.data-guru.create') }}" class="btn-primary">
-                        <i class="material-icons">add</i> Tambah Guru
-                    </a>
-                    <div class="search-box">
-                        <input type="text" class="search-input" placeholder="Cari guru...">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="{{ route('admin.data-guru.create') }}" class="btn-primary">
+                            <i class="material-icons">add</i> Tambah Guru
+                        </a>
                     </div>
+                    <form action="{{ route('admin.data-guru') }}" method="GET" style="width: 300px;">
+                        <div class="search-box">
+                            <input type="text" class="search-input" name="search" value="{{ request()->search }}" placeholder="Cari guru...">
+                        </div>
+                    </form>
                 </div>
                 
                 <div class="table-responsive">
@@ -314,8 +350,7 @@
                             <tr>
                                 <th>Nomor ID</th>
                                 <th>Nama Guru</th>
-                                <th>Email</th>
-                                <th>Nomor Telepon</th>
+                                <th>Jabatan</th>
                                 <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
@@ -324,9 +359,14 @@
                             @foreach($guru as $g)
                             <tr class="guru-row">
                                 <td class="nomor-id">{{ $g->nomor_id }}</td>
-                                <td class="nama">{{ $g->nama }}</td>
-                                <td class="email">{{ $g->email }}</td>
-                                <td class="telepon">{{ $g->nomor_telepon ?: '-' }}</td>
+                                <td class="nama">
+                                    @if($g->gelar)
+                                        {{ $g->nama }} {{ $g->gelar }}
+                                    @else
+                                        {{ $g->nama }}
+                                    @endif
+                                </td>
+                                <td class="jabatan">{{ $g->jabatan ?: '-' }}</td>
                                 <td>
                                     <span class="status-badge status-active">Aktif</span>
                                 </td>
@@ -343,11 +383,25 @@
                 </div>
                 
                 <div class="pagination">
-                    <a href="#">«</a>
-                    <a href="#" class="active">1</a>
-                    <a href="#">2</a>
-                    <a href="#">3</a>
-                    <a href="#">»</a>
+                    @if ($guru->onFirstPage())
+                        <span class="pagination-arrow disabled">«</span>
+                    @else
+                        <a href="{{ $guru->previousPageUrl() }}" class="pagination-arrow">«</a>
+                    @endif
+
+                    @foreach ($guru->getUrlRange(1, $guru->lastPage()) as $page => $url)
+                        @if ($page == $guru->currentPage())
+                            <span class="active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if ($guru->hasMorePages())
+                        <a href="{{ $guru->nextPageUrl() }}" class="pagination-arrow">»</a>
+                    @else
+                        <span class="pagination-arrow disabled">»</span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -375,30 +429,8 @@
             updateClock();
             setInterval(updateClock, 1000);
             
-            // Fungsi pencarian interaktif
-            const searchInput = document.querySelector('.search-box input');
-            if (searchInput) {
-                searchInput.addEventListener('keyup', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const rows = document.querySelectorAll('.guru-row');
-                    
-                    rows.forEach(function(row) {
-                        const nomorId = row.querySelector('.nomor-id').textContent.toLowerCase();
-                        const nama = row.querySelector('.nama').textContent.toLowerCase();
-                        const email = row.querySelector('.email').textContent.toLowerCase();
-                        const telepon = row.querySelector('.telepon').textContent.toLowerCase();
-                        
-                        if (nomorId.includes(searchTerm) || 
-                            nama.includes(searchTerm) || 
-                            email.includes(searchTerm) || 
-                            telepon.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            }
+            // Server-side search is active, client-side search removed
+            // The search form now sends a GET request to the server
         });
         
         function confirmDelete(id) {

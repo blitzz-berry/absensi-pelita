@@ -602,7 +602,7 @@ class GuruAbsensiController extends Controller
     private function handleProfileUpdate($user, $validatedData, $request)
     {
         $updateData = [];
-        
+
         // Only update fields if they are provided and not empty in the request
         if (isset($validatedData['nama']) && !empty(trim($validatedData['nama']))) {
             $updateData['nama'] = $validatedData['nama'];
@@ -613,14 +613,20 @@ class GuruAbsensiController extends Controller
         if (isset($validatedData['nomor_telepon'])) {
             $updateData['nomor_telepon'] = $validatedData['nomor_telepon'];
         }
-        
+        if (isset($validatedData['jabatan'])) {
+            $updateData['jabatan'] = $validatedData['jabatan'];
+        }
+        if (isset($validatedData['gelar'])) {
+            $updateData['gelar'] = $validatedData['gelar'];
+        }
+
         // Handle profile picture upload ONLY if a new file is provided
         if ($request->hasFile('foto_profile') && $request->file('foto_profile')->isValid()) {
             $foto = $request->file('foto_profile');
-            
+
             $foto_name = 'profile_' . $user->id . '_' . time() . '.' . $foto->getClientOriginalExtension();
             $foto_path = $foto->storeAs('profile_pictures', $foto_name, 'public');
-            
+
             if ($foto_path) {
                 // Delete old profile picture ONLY if upload successful and new file exists
                 if ($user->foto_profile) {
@@ -632,12 +638,12 @@ class GuruAbsensiController extends Controller
             }
         }
         // If no new photo uploaded, DO NOT touch existing photo
-        
+
         // Update user data if provided
         if (!empty($updateData)) {
             $user->update($updateData);
         }
-        
+
         return $updateData;
     }
     
@@ -668,15 +674,25 @@ class GuruAbsensiController extends Controller
             if ($request->has('nama') && !empty(trim($request->nama))) {
                 $rules['nama'] = 'string|max:255';
             }
-            
+
             if ($request->has('email') && !empty(trim($request->email))) {
                 $rules['email'] = 'email|unique:users,email,' . $user->id;
             }
-            
+
             if ($request->has('nomor_telepon')) {
                 $rules['nomor_telepon'] = 'string|max:20';
             }
-            
+
+            if ($request->has('jabatan')) {
+                $rules['jabatan'] = 'nullable|string|max:255';
+            }
+
+            if ($request->has('gelar')) {
+                $rules['gelar'] = 'nullable|string|max:255';
+            }
+
+
+
             if ($request->hasFile('foto_profile')) {
                 $rules['foto_profile'] = 'image|mimes:jpeg,png,jpg|max:2048';
             }
@@ -957,9 +973,16 @@ class GuruAbsensiController extends Controller
             $rules = [
                 'nama' => 'nullable|string|max:255',
                 'email' => 'nullable|email|unique:users,email,' . $user->id,
-                'nomor_telepon' => 'nullable|string|max:20',
+                'nomor_telepon' => 'required|string|max:20',
+                'jabatan' => 'nullable|string|max:255',
+                'gelar' => 'nullable|string|max:255',
                 'foto_profile' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ];
+
+            // If nomor_telepon is not being updated, temporarily remove the required validation
+            if (!$request->has('nomor_telepon') || $request->input('nomor_telepon') === $user->nomor_telepon) {
+                $rules['nomor_telepon'] = 'nullable|string|max:20';
+            }
             
             $messages = [
                 'foto_profile.image' => 'File harus berupa gambar',

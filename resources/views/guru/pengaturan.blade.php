@@ -256,15 +256,15 @@
         .input-group {
             margin-bottom: 15px;
         }
-        
+
         .input-group label {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
             color: #424242;
         }
-        
-        .input-group input, 
+
+        .input-group input,
         .input-group select,
         .input-group textarea {
             width: 100%;
@@ -272,8 +272,10 @@
             border: 1px solid #e0e0e0;
             border-radius: 6px;
             font-size: 14px;
+            box-sizing: border-box; /* Menambahkan ini agar padding tidak menambah lebar */
+            word-wrap: break-word; /* Mencegah overflow teks panjang */
         }
-        
+
         .input-group input:focus,
         .input-group select:focus,
         .input-group textarea:focus {
@@ -408,19 +410,23 @@
         
         .detail-item {
             margin-bottom: 15px;
+            min-width: 0; /* Penting untuk memungkinkan pembungkusan teks dalam grid */
         }
-        
+
         .detail-label {
             font-weight: 500;
             color: #757575;
             margin-bottom: 5px;
             font-size: 14px;
         }
-        
+
         .detail-value {
             font-size: 16px;
             color: #212121;
             font-weight: 500;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            min-width: 0; /* Penting untuk mencegah overflow */
         }
         
         .file-name-display {
@@ -555,7 +561,7 @@
                                      id="profile-display" alt="Profile" class="profile-avatar" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-right: 20px;">
                                 <div class="profile-info">
                                     <h3 style="margin: 0 0 10px 0; font-size: 18px; color: #212121;">{{ $user->nama }}</h3>
-                                    <p style="margin: 5px 0; color: #666; font-size: 16px;">{{ $user->email }}</p>
+                                    <p style="margin: 5px 0; color: #666; font-size: 16px; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; min-width: 0;">{{ $user->email }}</p>
                                     <span class="role" style="background-color: #e3f2fd; color: #1976D2; padding: 4px 12px; border-radius: 20px; font-size: 14px; display: inline-block; margin-top: 8px;">{{ ucfirst($user->role) }}</span>
                                 </div>
                             </div>
@@ -564,32 +570,33 @@
                         <div class="profile-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; padding: 15px 0; border-top: 1px solid #eee;">
                             <div class="detail-item">
                                 <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Nama Lengkap</div>
-                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ $user->nama }}</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500; word-wrap: break-word; overflow-wrap: break-word;">{{ $user->nama }}</div>
                             </div>
-                            
+
                             <div class="detail-item">
                                 <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Email</div>
-                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ $user->email }}</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500; word-wrap: break-word; overflow-wrap: break-word; min-width: 0;">{{ $user->email }}</div>
                             </div>
-                            
+
                             <div class="detail-item">
                                 <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Nomor Induk</div>
-                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ $user->nomor_id ?? '-' }}</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500; word-wrap: break-word; overflow-wrap: break-word;">{{ $user->nomor_id ?? '-' }}</div>
                             </div>
-                            
+
                             <div class="detail-item">
                                 <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Nomor Telepon</div>
-                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ $user->nomor_telepon ?? '-' }}</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500; word-wrap: break-word; overflow-wrap: break-word;">{{ $user->nomor_telepon ?? '-' }}</div>
                             </div>
-                            
+
+
                             <div class="detail-item">
                                 <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Role</div>
-                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ ucfirst($user->role) }}</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500; word-wrap: break-word; overflow-wrap: break-word;">{{ ucfirst($user->role) }}</div>
                             </div>
-                            
+
                             <div class="detail-item">
                                 <div class="detail-label" style="font-weight: 500; color: #757575; margin-bottom: 5px; font-size: 14px;">Terdaftar Sejak</div>
-                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500;">{{ \Carbon\Carbon::parse($user->created_at)->format('d M Y') }}</div>
+                                <div class="detail-value" style="font-size: 16px; color: #212121; font-weight: 500; word-wrap: break-word; overflow-wrap: break-word;">{{ \Carbon\Carbon::parse($user->created_at)->format('d M Y') }}</div>
                             </div>
                         </div>
                         
@@ -608,15 +615,16 @@
                             </div>
                             
                             <div class="input-group">
-                                <label>Email</label>
-                                <input type="email" name="email" value="{{ $user->email }}">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" value="{{ $user->email }}">
                             </div>
                             
                             <div class="input-group">
                                 <label>Nomor Telepon</label>
                                 <input type="text" name="nomor_telepon" value="{{ $user->nomor_telepon ?? '' }}">
                             </div>
-                            
+
+
                             <div class="input-group">
                                 <label>Foto Profil</label>
                                 <input type="file" name="foto_profile" id="foto_profile" accept="image/*" style="display: none;" onchange="updateFileName(this); previewImage(event);">
@@ -774,7 +782,7 @@
                     body: formData,
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
-                        'X-HTTP-Method-Override': 'PUT',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
                     }
                 })
@@ -907,6 +915,7 @@
                                     headers: {
                                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                                         'X-Requested-With': 'XMLHttpRequest',
+                                        'Accept': 'application/json',
                                     }
                                 }).then(async response => {
                                     if (!response.ok) {
@@ -914,7 +923,7 @@
                                         console.error('Error response:', errorText);
                                         throw new Error(`Network response was not ok: ${response.status}`);
                                     }
-                                    
+
                                     // Check if response is JSON
                                     const contentType = response.headers.get('content-type');
                                     if (contentType && contentType.includes('application/json')) {
@@ -1003,6 +1012,7 @@
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                                 'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
                             }
                         })
                         .then(async response => {
@@ -1011,7 +1021,7 @@
                                 console.error('Error response:', errorText);
                                 throw new Error(`Network response was not ok: ${response.status}`);
                             }
-                            
+
                             // Check if response is JSON
                             const contentType = response.headers.get('content-type');
                             if (contentType && contentType.includes('application/json')) {
@@ -1191,6 +1201,7 @@
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
                 }
             })
             .then(response => response.json())
