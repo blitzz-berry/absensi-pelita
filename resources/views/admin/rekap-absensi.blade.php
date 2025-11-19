@@ -500,7 +500,7 @@
             align-items: center;
             gap: 12px;
         }
-        
+
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -513,7 +513,51 @@
             font-weight: bold;
             font-size: 14px;
         }
-        
+
+        .aksi-column {
+            text-align: center;
+            vertical-align: middle;
+            width: 100px; /* Sesuaikan lebar kolom aksi */
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-hadir { background-color: rgba(76, 175, 80, 0.1); color: #4CAF50; }
+        .status-terlambat { background-color: rgba(255, 193, 7, 0.1); color: #FFC107; }
+        .status-izin { background-color: rgba(33, 150, 243, 0.1); color: #2196F3; }
+        .status-sakit { background-color: rgba(156, 39, 176, 0.1); color: #9C27B0; }
+        .status-alpha { background-color: rgba(244, 67, 54, 0.1); color: #F44336; }
+        .status-belum-absen { background-color: rgba(158, 158, 158, 0.1); color: #9E9E9E; }
+
+        .btn-sm.btn-icon {
+            padding: 6px;
+            margin: 0 2px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-pdf {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .btn-excel {
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        .btn-sm.btn-icon:hover {
+            opacity: 0.8;
+        }
+
         .success-message {
             padding: 15px;
             margin-bottom: 20px;
@@ -522,7 +566,62 @@
             border-radius: 8px;
             border-left: 4px solid #4CAF50;
         }
-        
+
+        /* Custom Pagination Styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px; /* Jarak antar elemen */
+            margin-top: 30px;
+            padding: 0;
+            list-style: none; /* Hapus list-style jika menggunakan <ul> */
+        }
+
+        .pagination-arrow,
+        .pagination span.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            margin: 0 2px;
+            background-color: #ffffff;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-arrow:hover:not(.disabled) {
+            background-color: #f0f5ff;
+            color: #1976D2;
+            border-color: #1976D2;
+        }
+
+        .pagination span.active {
+            background-color: #1976D2;
+            color: white;
+            border-color: #1976D2;
+            cursor: default; /* Nonaktifkan cursor pointer untuk halaman aktif */
+        }
+
+        .pagination-arrow.disabled {
+            color: #ccc;
+            background-color: #f9f9f9;
+            border-color: #eee;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .pagination .page-link:focus {
+            outline: 0;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2); /* Fokus ring */
+        }
+
         @media (max-width: 768px) {
             .filter-section {
                 flex-direction: column;
@@ -585,54 +684,22 @@
                 <form method="GET" action="{{ route('admin.rekap-absensi') }}">
                     <div class="filter-section">
                         <div class="filter-group">
-                            <label for="bulan">Bulan</label>
-                            <div class="input-with-icon">
-                                <i class="material-icons">date_range</i>
-                                <select name="bulan" id="bulan" class="filter-control" required>
-                                    <option value="">Pilih Bulan</option>
-                                    <option value="01" {{ $bulan == '01' ? 'selected' : '' }}>Januari</option>
-                                    <option value="02" {{ $bulan == '02' ? 'selected' : '' }}>Februari</option>
-                                    <option value="03" {{ $bulan == '03' ? 'selected' : '' }}>Maret</option>
-                                    <option value="04" {{ $bulan == '04' ? 'selected' : '' }}>April</option>
-                                    <option value="05" {{ $bulan == '05' ? 'selected' : '' }}>Mei</option>
-                                    <option value="06" {{ $bulan == '06' ? 'selected' : '' }}>Juni</option>
-                                    <option value="07" {{ $bulan == '07' ? 'selected' : '' }}>Juli</option>
-                                    <option value="08" {{ $bulan == '08' ? 'selected' : '' }}>Agustus</option>
-                                    <option value="09" {{ $bulan == '09' ? 'selected' : '' }}>September</option>
-                                    <option value="10" {{ $bulan == '10' ? 'selected' : '' }}>Oktober</option>
-                                    <option value="11" {{ $bulan == '11' ? 'selected' : '' }}>November</option>
-                                    <option value="12" {{ $bulan == '12' ? 'selected' : '' }}>Desember</option>
-                                </select>
-                            </div>
+                            <label for="tanggal">Tanggal</label>
+                            <input type="date" name="tanggal" id="tanggal" class="filter-control" value="{{ $tanggal ?? date('Y-m-d') }}">
                         </div>
-                        
-                        <div class="filter-group">
-                            <label for="tahun">Tahun</label>
-                            <div class="input-with-icon">
-                                <i class="material-icons">calendar_today</i>
-                                <select name="tahun" id="tahun" class="filter-control" required>
-                                    <option value="">Pilih Tahun</option>
-                                    <option value="2025" {{ $tahun == '2025' ? 'selected' : '' }}>2025</option>
-                                    <option value="2024" {{ $tahun == '2024' ? 'selected' : '' }}>2024</option>
-                                    <option value="2023" {{ $tahun == '2023' ? 'selected' : '' }}>2023</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="filter-actions">
-                            <button type="submit" class="btn-filter">
-                                <i class="material-icons">autorenew</i> Tampilkan Data
-                            </button>
-                        </div>
+
+                        <button type="submit" class="btn-filter">
+                            <i class="material-icons">autorenew</i> Tampilkan Data
+                        </button>
                     </div>
                 </form>
-                
+
                 <!-- Current Period Display -->
                 <div class="current-period">
-                    <h5>Periode: 
+                    <h5>Tanggal:
                         <span class="period-value">
-                            @if($bulan && $tahun)
-                                {{ \Carbon\Carbon::create()->month((int)$bulan)->format('F') }} {{ $tahun }}
+                            @if($tanggal)
+                                {{ \Carbon\Carbon::parse($tanggal)->format('j F Y') }}
                             @else
                                 Belum dipilih
                             @endif
@@ -648,38 +715,29 @@
                 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <div class="export-buttons">
-                        <form method="POST" action="{{ route('admin.rekap-absensi.export.excel') }}">
-                            @csrf
-                            <input type="hidden" name="bulan" value="{{ $bulan }}">
-                            <input type="hidden" name="tahun" value="{{ $tahun }}">
-                            <button type="submit" class="btn-export">
-                                <i class="material-icons">grid_on</i> Excel
-                            </button>
-                        </form>
-                    </div>
+                    <!-- Tombol export global (bulan/tahun) dihapus karena filter sekarang berdasarkan tanggal -->
                 </div>
                 
                 <!-- Summary Statistics Cards -->
                 <div class="summary-cards">
                     <div class="summary-card hadir">
-                        <div class="summary-value">{{ $rekap_absensi->sum('jumlah_hadir') }}</div>
+                        <div class="summary-value">{{ $absensi_harian->where('status', 'hadir')->count() }}</div>
                         <div class="summary-label">Total Hadir</div>
                     </div>
                     <div class="summary-card terlambat">
-                        <div class="summary-value">{{ $rekap_absensi->sum('jumlah_terlambat') }}</div>
+                        <div class="summary-value">{{ $absensi_harian->where('status', 'terlambat')->count() }}</div>
                         <div class="summary-label">Total Terlambat</div>
                     </div>
                     <div class="summary-card izin">
-                        <div class="summary-value">{{ $rekap_absensi->sum('jumlah_izin') }}</div>
+                        <div class="summary-value">{{ $absensi_harian->where('status', 'izin')->count() }}</div>
                         <div class="summary-label">Total Izin</div>
                     </div>
                     <div class="summary-card sakit">
-                        <div class="summary-value">{{ $rekap_absensi->sum('jumlah_sakit') }}</div>
+                        <div class="summary-value">{{ $absensi_harian->where('status', 'sakit')->count() }}</div>
                         <div class="summary-label">Total Sakit</div>
                     </div>
                     <div class="summary-card alpha">
-                        <div class="summary-value">{{ $rekap_absensi->sum('jumlah_alpha') }}</div>
+                        <div class="summary-value">{{ $absensi_harian->where('status', 'alpha')->count() }}</div>
                         <div class="summary-label">Total Alpha</div>
                     </div>
                 </div>
@@ -691,43 +749,73 @@
                             <tr>
                                 <th>Nama Guru</th>
                                 <th>Nomor ID</th>
-                                <th>Hadir</th>
-                                <th>Terlambat</th>
-                                <th>Izin</th>
-                                <th>Sakit</th>
-                                <th>Alpha</th>
-                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Jam Masuk</th>
+                                <th>Jam Pulang</th>
+                                <th>Lokasi Masuk</th>
+                                <th>Lokasi Pulang</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($rekap_absensi as $rekap)
-                            <tr>
-                                <td class="name-col">
-                                    <div class="user-info">
-                                        <div class="user-avatar">{{ strtoupper(substr($rekap->user->nama ?? 'N/A', 0, 1)) }}</div>
-                                        <span>{{ $rekap->user->nama ?? 'N/A' }}</span>
-                                    </div>
-                                </td>
-                                <td>{{ $rekap->user->nomor_id ?? 'N/A' }}</td>
-                                <td>{{ $rekap->jumlah_hadir }}</td>
-                                <td>{{ $rekap->jumlah_terlambat }}</td>
-                                <td>{{ $rekap->jumlah_izin }}</td>
-                                <td>{{ $rekap->jumlah_sakit }}</td>
-                                <td>{{ $rekap->jumlah_alpha }}</td>
-                                <td class="total-col">{{ $rekap->jumlah_hadir + $rekap->jumlah_terlambat + $rekap->jumlah_izin + $rekap->jumlah_sakit + $rekap->jumlah_alpha }}</td>
-                            </tr>
+                            @forelse($guru as $guruItem)
+                                @php
+                                    $absensiGuru = $absensi_harian->get($guruItem->id);
+                                @endphp
+                                <tr>
+                                    <td class="name-col">
+                                        {{ $guruItem->nama ?? 'N/A' }}
+                                    </td>
+                                    <td>{{ $guruItem->nomor_id ?? 'N/A' }}</td>
+                                    <td>
+                                        @if($absensiGuru)
+                                            <span class="status-badge status-{{ $absensiGuru->status }}">
+                                                {{ ucfirst($absensiGuru->status) }}
+                                            </span>
+                                        @else
+                                            <span class="status-badge status-belum-absen">Belum Absen</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $absensiGuru->jam_masuk ?? '-' }}</td>
+                                    <td>{{ $absensiGuru->jam_pulang ?? '-' }}</td>
+                                    <td>{{ $absensiGuru->lokasi_masuk ?? '-' }}</td>
+                                    <td>{{ $absensiGuru->lokasi_pulang ?? '-' }}</td>
+                                    <td class="aksi-column">
+                                        <!-- Link untuk ekspor Excel harian per guru -->
+                                        <a href="{{ route('admin.rekap-absensi.export.excel', ['user_id' => $guruItem->id]) }}?tanggal={{ $tanggal }}" class="btn btn-sm btn-icon btn-excel" title="Download Excel Harian">
+                                            <i class="material-icons">file_download</i>
+                                        </a>
+                                    </td>
+                                </tr>
                             @empty
                             <tr>
-                                <td colspan="8" style="text-align: center; padding: 40px;">Belum ada data rekap absensi untuk bulan/tahun yang dipilih. Silakan generate terlebih dahulu.</td>
+                                <td colspan="8" style="text-align: center; padding: 40px;">Tidak ada data guru.</td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-                
+
+                <!-- Pagination -->
                 <div class="pagination">
-                    @if($rekap_absensi->count() > 0)
-                        <span>Menampilkan {{ $rekap_absensi->count() }} data</span>
+                    @if (!$guru->onFirstPage())
+                        <a href="{{ $guru->previousPageUrl() }}" class="pagination-arrow">«</a>
+                    @else
+                        <span class="pagination-arrow disabled">«</span>
+                    @endif
+
+                    @foreach ($guru->getUrlRange(1, $guru->lastPage()) as $page => $url)
+                        @if ($page == $guru->currentPage())
+                            <span class="active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if ($guru->hasMorePages())
+                        <a href="{{ $guru->nextPageUrl() }}" class="pagination-arrow">»</a>
+                    @else
+                        <span class="pagination-arrow disabled">»</span>
                     @endif
                 </div>
             </div>
@@ -760,43 +848,32 @@
             updateClock();
             setInterval(updateClock, 1000);
             
-            // Auto-submit form when both month and year are selected
-            const bulanSelect = document.getElementById('bulan');
-            const tahunSelect = document.getElementById('tahun');
-            
-            function updatePage() {
-                if (bulanSelect.value && tahunSelect.value) {
-                    // Submit the form to update the page with new parameters
-                    document.querySelector('form[method="GET"]').submit();
-                }
-            }
-            
-            // Add event listeners to both select elements
-            bulanSelect.addEventListener('change', updatePage);
-            tahunSelect.addEventListener('change', updatePage);
-            
-            // Optional: Add functionality to update period display in real-time
+
+            // Initial update for clock is already handled above
+            // No more auto-submit on change for date input, manual submit via button
+
+            // Get the new date input and period display element
+            const tanggalInput = document.getElementById('tanggal');
+            const periodDisplay = document.querySelector('.period-value');
+
+            // Update period display based on the date input value
             function updatePeriodDisplay() {
-                const bulan = bulanSelect.value;
-                const tahun = tahunSelect.value;
-                
-                const monthNames = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                
-                const periodDisplay = document.querySelector('.period-value');
-                if (bulan && tahun) {
-                    const bulanInt = parseInt(bulan);
-                    periodDisplay.textContent = monthNames[bulanInt] + ' ' + tahun;
+                const tanggalValue = tanggalInput.value;
+                if (tanggalValue) {
+                    const dateObject = new Date(tanggalValue + 'T00:00:00'); // Add time to avoid timezone issues
+                    periodDisplay.textContent = dateObject.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                 } else {
+                    // Fallback if no date is selected, though the input likely has a default value
                     periodDisplay.textContent = 'Belum dipilih';
                 }
             }
-            
-            // Initial update
+
+            // Add event listener to update period display when date input changes
+            tanggalInput.addEventListener('change', updatePeriodDisplay);
+
+            // Initial update on page load using the value from the input
             updatePeriodDisplay();
-            
-            // Add event listeners to update period display
-            bulanSelect.addEventListener('change', updatePeriodDisplay);
-            tahunSelect.addEventListener('change', updatePeriodDisplay);
+
         });
     </script>
 @endsection

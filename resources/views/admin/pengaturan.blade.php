@@ -563,7 +563,7 @@
                                 <div class="setting-item">
                                     <div class="setting-label">Waktu Toleransi Keterlambatan</div>
                                     <div class="setting-control">
-                                        <select name="toleransi_keterlambatan">
+                                        <select name="toleransi_keterlambatan" id="toleransi_keterlambatan">
                                             <option value="15" {{ $settings['toleransi_keterlambatan'] == 15 ? 'selected' : '' }}>15 menit</option>
                                             <option value="30" {{ $settings['toleransi_keterlambatan'] == 30 ? 'selected' : '' }}>30 menit</option>
                                             <option value="45" {{ $settings['toleransi_keterlambatan'] == 45 ? 'selected' : '' }}>45 menit</option>
@@ -590,12 +590,12 @@
                             <div class="setting-section">
                                 <div class="input-group">
                                     <label for="radius_absen">Radius Lokasi Absen (meter)</label>
-                                    <input type="number" name="radius_absen" value="{{ $settings['radius_absen'] }}" min="10" max="200">
+                                    <input type="number" id="radius_absen" name="radius_absen" value="{{ $settings['radius_absen'] }}" min="10" max="200">
                                 </div>
-                                
+
                                 <div class="input-group">
                                     <label for="pesan_pengingat">Pesan Pengingat Absensi</label>
-                                    <input type="text" name="pesan_pengingat" value="{{ $settings['pesan_pengingat'] }}">
+                                    <input type="text" id="pesan_pengingat" name="pesan_pengingat" value="{{ $settings['pesan_pengingat'] }}">
                                 </div>
                             </div>
                             
@@ -695,18 +695,18 @@
                             <!-- Note: Method override will be handled in JavaScript -->
                             
                             <div class="input-group">
-                                <label>Password Lama</label>
-                                <input type="password" name="password_lama" id="old_password" required>
+                                <label for="current_password">Password Lama</label>
+                                <input type="password" id="current_password" name="current_password" required>
                             </div>
-                            
+
                             <div class="input-group">
-                                <label>Password Baru</label>
-                                <input type="password" name="password_baru" id="new_password" required>
+                                <label for="new_password">Password Baru</label>
+                                <input type="password" id="new_password" name="new_password" required>
                             </div>
-                            
+
                             <div class="input-group">
-                                <label>Konfirmasi Password Baru</label>
-                                <input type="password" name="password_baru_confirmation" id="confirm_password" required>
+                                <label for="new_password_confirmation">Konfirmasi Password Baru</label>
+                                <input type="password" id="new_password_confirmation" name="new_password_confirmation" required>
                             </div>
                             
                             <div class="d-flex justify-content-center gap-2 mt-3">
@@ -744,6 +744,12 @@
             };
         }
 
+        if (typeof window.resetProfileForm === 'undefined') {
+            window.resetProfileForm = function() {
+                console.log('Please wait, page still loading...');
+            };
+        }
+
         // Initialize dropdown
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContentLoaded in pengaturan page');
@@ -751,30 +757,60 @@
             var instances = M.Dropdown.init(elems, {
                 coverTrigger: false
             });
-            
+
+            // Initialize Materialize FormSelect for the tolerance setting and other selects
+            var selectElems = document.querySelectorAll('select');
+            M.FormSelect.init(selectElems);
+
+            // --- Perbaikan untuk Materialize FormSelect ---
+            // Pastikan input.select-dropdown yang dibuat oleh Materialize mendapatkan id jika diperlukan untuk aksesibilitas
+            selectElems.forEach(function(originalSelect) {
+                const selectId = originalSelect.id;
+                // Cari wrapper yang dibuat oleh Materialize
+                const wrapper = originalSelect.closest('.select-wrapper');
+                if (wrapper) {
+                    // Cari input yang ditampilkan kepada pengguna
+                    const dropdownInput = wrapper.querySelector('input.select-dropdown');
+                    if (dropdownInput && selectId && !dropdownInput.id) {
+                        // Berikan id dari select asli ke input dropdown untuk aksesibilitas
+                        dropdownInput.id = selectId + '_dropdown'; // Tambahkan akhiran untuk menghindari konflik id
+                    }
+                }
+            });
+            // --- Akhir Perbaikan ---
+
             // Update live clock
             function updateClock() {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString();
-                
+
                 document.getElementById('live-clock').textContent = timeString;
             }
-            
+
             // Update clock immediately and then every second
             updateClock();
             setInterval(updateClock, 1000);
-            
+
             // Add event listeners to save buttons
-            const saveButtons = document.querySelectorAll('.btn-primary');
+            // Hanya target tombol submit utama dalam form, bukan tombol seperti 'Edit Profil' atau 'Batal'
+            const saveButtons = document.querySelectorAll('form button[type="submit"].btn-primary');
             saveButtons.forEach(button => {
-                // Hanya tambahkan event listener untuk tombol yang bukan tombol ganti password
-                if (!button.closest('#change-password-form')) {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        // Show a simple success message
-                        alert('Pengaturan berhasil disimpan!');
-                    });
-                }
+                button.addEventListener('click', function(e) {
+                    // Cek apakah tombol ini adalah tombol submit untuk form edit profil
+                    if (this.closest('#edit-profile-form')) {
+                        // Ini tombol 'Simpan Perubahan' di form edit profil
+                        // Submit form edit profil menggunakan fungsi AJAX
+                        e.preventDefault(); // Mencegah submit standar
+                        console.log('Submit click intercepted, calling submitProfileForm');
+                        submitProfileForm(); // <-- Memanggil fungsi yang isinya AJAX dan notifikasi
+                    } else {
+                        // Ini tombol simpan lain, dari form pengaturan umum
+                        // Submit form pengaturan umum
+                        e.preventDefault(); // Mencegah submit standar
+                        console.log('Submit click intercepted for general setting, calling submitGeneralSettingsForm');
+                        submitGeneralSettingsForm(); // <-- Memanggil fungsi yang isinya AJAX dan notifikasi
+                    }
+                });
             });
             
             // Handle toggle switch text changes

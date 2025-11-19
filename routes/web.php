@@ -48,12 +48,17 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['auth', 'role:admin', 'admin.email'])->group(function () {
         Route::match(['get', 'post'], '/admin/rekap-absensi', [GuruController::class, 'rekapAbsensi'])->name('admin.rekap-absensi');
         Route::post('/admin/rekap-absensi/generate', [GuruController::class, 'generateRekap'])->name('admin.rekap-absensi.generate');
-        Route::post('/admin/rekap-absensi/export-pdf', [GuruController::class, 'exportPDF'])->name('admin.rekap-absensi.export.pdf');
-        Route::post('/admin/rekap-absensi/export-excel', [GuruController::class, 'exportExcel'])->name('admin.rekap-absensi.export.excel');
+        // Route untuk ekspor global (POST) - hanya Excel
+        Route::post('/admin/rekap-absensi/export-excel', [GuruController::class, 'exportExcelGlobal'])->name('admin.rekap-absensi.export.excel.global');
+        // Route untuk ekspor per guru (GET dengan user_id, bulan, tahun sebagai query params) - hanya Excel
+        Route::get('/admin/rekap-absensi/export-excel/{user_id}', [GuruController::class, 'exportExcelPerGuru'])->name('admin.rekap-absensi.export.excel');
     });
     
     // Route untuk peta kehadiran (hanya admin dengan email diizinkan)
     Route::get('/admin/peta-kehadiran', [GuruController::class, 'petaKehadiran'])->middleware(['auth', 'role:admin', 'admin.email'])->name('admin.peta-kehadiran');
+
+    // Route untuk API kehadiran harian (hanya admin dengan email diizinkan)
+    Route::get('/admin/api/kehadiran-harian', [GuruController::class, 'getKehadiranHarian'])->middleware(['auth', 'role:admin', 'admin.email'])->name('admin.api.kehadiran.harian');
     
     // Route untuk pengajuan izin (hanya admin dengan email diizinkan)
     Route::middleware(['auth', 'role:admin', 'admin.email'])->group(function () {

@@ -421,7 +421,7 @@
                     <div class="filter-section">
                         <div class="filter-group">
                             <label for="tanggal">Tanggal</label>
-                            <input type="date" name="tanggal" id="tanggal" class="filter-control" value="{{ date('Y-m-d') }}">
+                            <input type="date" name="tanggal" id="tanggal" class="filter-control" value="{{ $tanggal ?? date('Y-m-d') }}">
                         </div>
                         
                         <div class="filter-group">
@@ -473,15 +473,15 @@
                 <!-- Map Info Section -->
                 <div style="margin-top: 20px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px;">
                     <div style="text-align: center; padding: 15px; background: #e3f2fd; border-radius: 8px; flex: 1; min-width: 150px;">
-                        <div style="font-size: 24px; font-weight: bold; color: #1976D2;">105</div>
+                        <div id="jumlah-hadir-display" style="font-size: 24px; font-weight: bold; color: #1976D2;">{{ $jumlahHadir }}</div>
                         <div style="color: #555;">Total Guru Hadir</div>
                     </div>
                     <div style="text-align: center; padding: 15px; background: #fff3e0; border-radius: 8px; flex: 1; min-width: 150px;">
-                        <div style="font-size: 24px; font-weight: bold; color: #FF9800;">10</div>
+                        <div id="jumlah-terlambat-display" style="font-size: 24px; font-weight: bold; color: #FF9800;">{{ $jumlahTerlambat }}</div>
                         <div style="color: #555;">Terlambat</div>
                     </div>
                     <div style="text-align: center; padding: 15px; background: #ffebee; border-radius: 8px; flex: 1; min-width: 150px;">
-                        <div style="font-size: 24px; font-weight: bold; color: #F44336;">5</div>
+                        <div id="jumlah-tidak-hadir-display" style="font-size: 24px; font-weight: bold; color: #F44336;">{{ $jumlahTidakHadir }}</div>
                         <div style="color: #555;">Tidak Hadir</div>
                     </div>
                 </div>
@@ -620,4 +620,87 @@
     
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Script untuk polling update data kehadiran -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let pollingIntervalId = null;
+            const pollingIntervalMs = 30000; // 30 detik
+
+            function updateKehadiranData() {
+                // Ambil tanggal dari input form
+                const tanggal = document.getElementById('tanggal')?.value || '{{ $tanggal ?? date("Y-m-d") }}';
+                const url = '/admin/api/kehadiran-harian?tanggal=' + encodeURIComponent(tanggal);
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update elemen dengan data baru menggunakan ID
+                    document.getElementById('jumlah-hadir-display').textContent = data.jumlahHadir;
+                    document.getElementById('jumlah-terlambat-display').textContent = data.jumlahTerlambat;
+                    document.getElementById('jumlah-tidak-hadir-display').textContent = data.jumlahTidakHadir;
+
+                    console.log('Kehadiran data updated via polling:', data); // Untuk debugging
+                })
+                .catch(error => {
+                    console.error('Error fetching kehadiran data:', error);
+                });
+            }
+
+            function startPolling() {
+                if (pollingIntervalId) {
+                    clearInterval(pollingIntervalId);
+                }
+                // Jalankan sekali pertama kali untuk sinkronisasi cepat
+                updateKehadiranData();
+                // Lalu mulai polling
+                pollingIntervalId = setInterval(updateKehadiranData, pollingIntervalMs);
+            }
+
+            function stopPolling() {
+                if (pollingIntervalId) {
+                    clearInterval(pollingIntervalId);
+                    pollingIntervalId = null;
+                }
+            }
+
+            // Mulai polling saat halaman dimuat
+            startPolling();
+
+            // Hentikan polling saat pengguna meninggalkan halaman
+            window.addEventListener('beforeunload', stopPolling);
+
+            // Mulai polling ulang jika pengguna kembali ke tab ini setelah jangka waktu lama (opsional)
+            // window.addEventListener('focus', startPolling);
+
+            // Hentikan polling jika filter tanggal diubah, dan mulai ulang dengan jeda kecil
+            document.querySelector('form[method="GET"]').addEventListener('submit', function() {
+                stopPolling();
+                // Mulai kembali polling setelah jeda kecil setelah halaman reload
+                setTimeout(() => {
+                    startPolling();
+                }, 1000); // Delay 1 detik agar data baru dari server (karena form GET reload) bisa dimuat dulu
+            });
+
+            // Jika ada tombol refresh di map (misalnya #refreshBtn), tambahkan event listener
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    updateKehadiranData(); // Panggil update sekali secara manual
+                });
+            }
+        });
+    </script>
 @endsection

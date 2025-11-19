@@ -172,15 +172,54 @@ class GuruController extends Controller
     /**
      * Display peta kehadiran.
      */
-    public function petaKehadiran()
+    public function petaKehadiran(Request $request)
     {
         $user = auth()->user();
         if ($user->role !== 'admin') {
             abort(403, 'Unauthorized');
         }
-        
+
+        // Ambil tanggal dari request atau default ke tanggal saat ini
+        $tanggal = $request->tanggal ?? date('Y-m-d');
+
+        // Ambil total guru
+        $totalGuru = User::where('role', 'guru')->count();
+
+        // Hitung kehadiran berdasarkan status untuk tanggal tertentu
+        $jumlahHadir = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'hadir')
+            ->count();
+
+        $jumlahTerlambat = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'terlambat')
+            ->count();
+
+        $jumlahIzin = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'izin')
+            ->count();
+
+        $jumlahSakit = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'sakit')
+            ->count();
+
+        // Jumlah alpha (tidak hadir)
+        $jumlahAlpha = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'alpha')
+            ->count();
+
+        // Jumlah yang tidak hadir secara keseluruhan (guru yang tidak absen sama sekali + status alpha)
+        // Hitung jumlah guru yang tidak memiliki absensi sama sekali pada tanggal tersebut
+        $idsGuruAbsen = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->pluck('user_id');
+
+        $jumlahTidakHadir = ($totalGuru - $idsGuruAbsen->count()) + $jumlahAlpha;
+
         return view('admin.peta-kehadiran', [
-            'currentUser' => $user
+            'currentUser' => $user,
+            'jumlahHadir' => $jumlahHadir,
+            'jumlahTerlambat' => $jumlahTerlambat,
+            'jumlahTidakHadir' => $jumlahTidakHadir,
+            'tanggal' => $tanggal
         ]);
     }
 
@@ -251,6 +290,58 @@ class GuruController extends Controller
         }
 
         return redirect()->route('admin.pengajuan-izin')->with('success', 'Pengajuan izin berhasil diajukan');
+    }
+
+    /**
+     * Get kehadiran harian untuk tanggal tertentu (untuk polling AJAX).
+     */
+    public function getKehadiranHarian(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $tanggal = $request->tanggal ?? date('Y-m-d');
+
+        // Ambil total guru
+        $totalGuru = User::where('role', 'guru')->count();
+
+        // Hitung kehadiran berdasarkan status untuk tanggal tertentu
+        $jumlahHadir = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'hadir')
+            ->count();
+
+        $jumlahTerlambat = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'terlambat')
+            ->count();
+
+        $jumlahIzin = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'izin')
+            ->count();
+
+        $jumlahSakit = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'sakit')
+            ->count();
+
+        // Jumlah alpha (tidak hadir)
+        $jumlahAlpha = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->where('status', 'alpha')
+            ->count();
+
+        // Jumlah yang tidak hadir secara keseluruhan (guru yang tidak absen sama sekali + status alpha)
+        // Hitung jumlah guru yang tidak memiliki absensi sama sekali pada tanggal tersebut
+        $idsGuruAbsen = \App\Models\Absensi::where('tanggal', $tanggal)
+            ->pluck('user_id');
+
+        $jumlahTidakHadir = ($totalGuru - $idsGuruAbsen->count()) + $jumlahAlpha;
+
+        return response()->json([
+            'jumlahHadir' => $jumlahHadir,
+            'jumlahTerlambat' => $jumlahTerlambat,
+            'jumlahTidakHadir' => $jumlahTidakHadir,
+            'tanggal' => $tanggal
+        ]);
     }
 
     /**
@@ -426,7 +517,7 @@ class GuruController extends Controller
     }
 
     /**
-     * Display rekap absensi.
+     * Display rekap absensi harian.
      */
     public function rekapAbsensi(Request $request)
     {
@@ -434,31 +525,32 @@ class GuruController extends Controller
         if ($user->role !== 'admin') {
             abort(403, 'Unauthorized');
         }
-        
-        // Ambil semua guru
-        $guru = User::where('role', 'guru')->get();
-        
-        // Ambil data absensi terbaru
-        $absensi = \App\Models\Absensi::with('user')->get();
-        
-        // Ambil data rekap absensi (menggunakan query parameter atau default ke bulan ini)
-        $bulan = $request->get('bulan', date('m'));
-        $tahun = $request->get('tahun', date('Y'));
-        
-        // Selalu perbarui rekap absensi sebelum menampilkan
-        $this->generateRekapForMonth($bulan, $tahun);
-        
-        $rekap_absensi = \App\Models\RekapAbsensi::with('user')
-            ->where('bulan', $bulan)
-            ->where('tahun', $tahun)
+
+        // Ambil tanggal dari request atau default ke tanggal saat ini
+        $tanggal = $request->get('tanggal', date('Y-m-d'));
+
+        // Ambil data absensi untuk tanggal tertentu, termasuk data user
+        $absensi_harian_collection = \App\Models\Absensi::with('user')
+            ->where('tanggal', $tanggal)
             ->get();
 
+        // Ambil semua guru dan lakukan paginasi (10 per halaman)
+        $guru_paginator = User::where('role', 'guru')->paginate(10);
+
+        // Ambil hanya user_id dari guru pada halaman saat ini
+        $userIdsOnCurrentPage = $guru_paginator->pluck('id');
+
+        // Filter koleksi absensi hanya untuk user pada halaman saat ini
+        $filtered_absensi_collection = $absensi_harian_collection->whereIn('user_id', $userIdsOnCurrentPage);
+
+        // Indeks koleksi absensi yang difilter berdasarkan user_id untuk pencarian cepat di view
+        $absensi_harian = $filtered_absensi_collection->keyBy('user_id');
+
         return view('admin.rekap-absensi', [
-            'guru' => $guru,
-            'absensi' => $absensi,
-            'rekap_absensi' => $rekap_absensi,
-            'bulan' => $bulan,
-            'tahun' => $tahun,
+            'guru' => $guru_paginator, // Ganti dengan $guru_paginator
+            'absensi_harian' => $absensi_harian,
+            'tanggal' => $tanggal,
+            // 'rekap_absensi', 'bulan', 'tahun' tidak lagi dikirim
             'currentUser' => $user
         ]);
     }
@@ -580,42 +672,11 @@ class GuruController extends Controller
         return redirect()->route('admin.rekap-absensi')->with('success', 'Rekap absensi berhasil dibuat');
     }
     
-    /**
-     * Export rekap absensi to PDF
-     */
-    public function exportPDF(Request $request)
-    {
-        $user = auth()->user();
-        if ($user->role !== 'admin') {
-            abort(403, 'Unauthorized');
-        }
-
-        $bulan = $request->bulan ?? date('m');
-        $tahun = $request->tahun ?? date('Y');
-        
-        $rekap_absensi = \App\Models\RekapAbsensi::with('user')
-            ->where('bulan', $bulan)
-            ->where('tahun', $tahun)
-            ->get();
-        
-        // Check if dompdf is available
-        if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return redirect()->back()->with('error', 'PDF export package not installed. Please run: composer require barryvdh/laravel-dompdf');
-        }
-        
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.rekap-absensi-pdf', [
-            'rekap_absensi' => $rekap_absensi,
-            'bulan' => $bulan,
-            'tahun' => $tahun
-        ]);
-        
-        return $pdf->download('rekap-absensi-'.$bulan.'-'.$tahun.'.pdf');
-    }
     
     /**
-     * Export rekap absensi to Excel
+     * Export rekap absensi to Excel (Global - All Users)
      */
-    public function exportExcel(Request $request)
+    public function exportExcelGlobal(Request $request)
     {
         $user = auth()->user();
         if ($user->role !== 'admin') {
@@ -624,16 +685,101 @@ class GuruController extends Controller
 
         $bulan = $request->bulan ?? date('m');
         $tahun = $request->tahun ?? date('Y');
-        
+
         // Check if maatwebsite/excel is available
         if (!class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
             return redirect()->back()->with('error', 'Excel export package not installed. Please run: composer require maatwebsite/excel');
         }
-        
+
         // Use Excel facade to download
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\RekapAbsensiExport($bulan, $tahun), 
+            new \App\Exports\RekapAbsensiExport($bulan, $tahun),
             'rekap-absensi-'.$bulan.'-'.$tahun.'.xlsx'
         );
+    }
+
+
+    /**
+     * Export absensi harian to Excel for a specific user.
+     * Expects 'tanggal' as a query parameter.
+     */
+    public function exportExcelPerGuru(Request $request, $user_id)
+    {
+        $admin = auth()->user();
+        if ($admin->role !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+
+        $tanggal = $request->query('tanggal');
+
+        if (!$tanggal) {
+             return redirect()->back()->with('error', 'Tanggal wajib disertakan untuk export harian.');
+        }
+
+        // Validasi apakah user_id adalah guru
+        $guru = User::where('id', $user_id)->where('role', 'guru')->firstOrFail();
+
+        // Ambil data absensi harian untuk guru dan tanggal tertentu
+        $absensi_harian = \App\Models\Absensi::where('user_id', $user_id)
+            ->where('tanggal', $tanggal)
+            ->first(); // Bisa null jika tidak absen
+
+        // Check if maatwebsite/excel is available
+        if (!class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
+            return redirect()->back()->with('error', 'Excel export package not installed. Please run: composer require maatwebsite/excel');
+        }
+
+        // Kita buat anonymous class untuk export data harian
+        $exportClass = new class($guru, $absensi_harian, $tanggal) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle
+        {
+            private $guru;
+            private $absensi;
+            private $tanggal;
+
+            public function __construct($guru, $absensi, $tanggal)
+            {
+                $this->guru = $guru;
+                $this->absensi = $absensi;
+                $this->tanggal = $tanggal;
+            }
+
+            public function collection()
+            {
+                // Return collection dengan satu baris data
+                $rowData = [
+                     'Nama' => $this->guru->nama,
+                     'Nomor ID' => $this->guru->nomor_id,
+                     'Tanggal' => $this->tanggal, // Gunakan tanggal dari request
+                     'Status' => $this->absensi ? $this->absensi->status : 'Belum Absen',
+                     'Jam Masuk' => $this->absensi ? $this->absensi->jam_masuk : '-',
+                     'Jam Pulang' => $this->absensi ? $this->absensi->jam_pulang : '-',
+                     'Lokasi Masuk' => $this->absensi ? $this->absensi->lokasi_masuk : '-',
+                     'Lokasi Pulang' => $this->absensi ? $this->absensi->lokasi_pulang : '-',
+                 ];
+                return collect([$rowData]);
+            }
+
+            public function headings(): array
+            {
+                return [
+                    'Nama Guru',
+                    'Nomor ID',
+                    'Tanggal',
+                    'Status',
+                    'Jam Masuk',
+                    'Jam Pulang',
+                    'Lokasi Masuk',
+                    'Lokasi Pulang'
+                ];
+            }
+
+            public function title(): string
+            {
+                return 'Absensi ' . $this->guru->nama;
+            }
+        };
+
+        $namaGuru = \Str::slug($guru->nama, '_');
+        return \Maatwebsite\Excel\Facades\Excel::download($exportClass, 'absensi-harian-'.$namaGuru.'-'.$tanggal.'.xlsx');
     }
 }
