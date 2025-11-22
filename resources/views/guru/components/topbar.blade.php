@@ -5,20 +5,24 @@
         <span></span>
     </div>
     <div class="clock-display" id="live-clock">00:00:00</div>
+    @php
+        $user = auth()->user();
+        $fotoProfileUrl = $user->foto_profile ? asset('storage/'.$user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5';
+    @endphp
     <div class="profile-menu dropdown-trigger" data-target="dropdown-profile">
-        <img src="{{ $currentUser->foto_profile ? asset($currentUser->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($currentUser->nama).'&color=1976D2&background=F5F5F5' }}"
+        <img src="{{ $fotoProfileUrl }}"
              alt="Profile" class="circle" width="40" height="40">
         <span style="margin-left: 10px; font-weight: 500;">
-            @if($currentUser->gelar)
-                {{ $currentUser->nama }} {{ $currentUser->gelar }}
+            @if($user->gelar)
+                {{ $user->nama }} {{ $user->gelar }}
             @else
-                {{ $currentUser->nama }}
+                {{ $user->nama }}
             @endif
         </span>
     </div>
     <ul id="dropdown-profile" class="dropdown-content">
-        <li><a href="{{ route('admin.profil') }}"><i class="material-icons left">person</i> Profil Saya</a></li>
-        <li><a href="{{ route('admin.pengaturan') }}"><i class="material-icons left">settings</i> Pengaturan</a></li>
+        <li><a href="{{ route('guru.profil.saya') }}"><i class="material-icons left">person</i> Profil Saya</a></li>
+        <li><a href="{{ route('guru.pengaturan') }}"><i class="material-icons left">settings</i> Pengaturan</a></li>
         <li class="divider"></li>
         <li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="material-icons left">exit_to_app</i> Keluar</a></li>
     </ul>

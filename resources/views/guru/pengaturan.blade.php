@@ -4,112 +4,12 @@
 
 @section('styles')
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f7fa;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            width: 260px;
-            background: #ffffff;
-            box-shadow: 3px 0 15px rgba(0,0,0,0.08);
-            z-index: 99;
-            padding-top: 0;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .sidebar ul li {
-            margin: 0;
-        }
-        
-        .sidebar ul li a {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            color: #555;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-        
-        .sidebar ul li a:hover {
-            background-color: #f0f5ff;
-            color: #1976D2;
-        }
-        
-        .sidebar ul li a.active {
-            background-color: #e3f2fd;
-            color: #1976D2;
-            border-left: 4px solid #1976D2;
-        }
-        
-        .sidebar ul li a i {
-            margin-right: 15px;
-            font-size: 20px;
-            width: 24px;
-            text-align: center;
-        }
-        
-        .topbar {
-            position: fixed;
-            top: 0;
-            left: 260px;
-            right: 0;
-            height: 60px;
-            background: #ffffff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            z-index: 98;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            transition: left 0.3s ease;
-        }
-        
-        .main-content {
-            margin-top: 60px;
-            margin-left: 260px;
-            padding: 30px;
-            transition: margin-left 0.3s ease;
-        }
-        
         .dashboard-card {
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             background: #fff;
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .profile-menu {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .clock-display {
-            font-size: 18px;
-            font-weight: 500;
-            margin-right: 20px;
-            font-family: 'Courier New', monospace;
-            background: #f5f5f5;
-            padding: 5px 12px;
-            border-radius: 6px;
         }
         
         .welcome-section {
@@ -459,15 +359,6 @@
         }
         
         @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-            
-            .topbar {
-                left: 0;
-            }
-            
             .card-content {
                 padding: 20px;
             }
@@ -509,38 +400,10 @@
 
 @section('content')
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div style="padding: 0 10px 5px 10px; text-align: center; border-bottom: 1px solid #eee; display: flex; justify-content: center; align-items: center; margin-top: -60px;">
-            <img src="{{ asset('image/logo-pelita.png') }}" alt="Logo Pelita" style="width: 140px; height: 140px; object-fit: contain;">
-        </div>
-        <ul>
-            <li><a href="{{ route('dashboard') }}" @if(request()->routeIs('dashboard')) class="active" @endif><i class="material-icons">dashboard</i> Dashboard</a></li>
-            <li><a href="{{ route('guru.absensi.harian') }}" @if(request()->routeIs('guru.absensi.harian')) class="active" @endif><i class="material-icons">calendar_today</i> Absensi Harian</a></li>
-            <li><a href="{{ route('guru.riwayat.kehadiran') }}" @if(request()->routeIs('guru.riwayat.kehadiran')) class="active" @endif><i class="material-icons">history</i> Riwayat Kehadiran</a></li>
-            <li><a href="{{ route('guru.lokasi.saya') }}" @if(request()->routeIs('guru.lokasi.saya')) class="active" @endif><i class="material-icons">location_on</i> Lokasi Saya</a></li>
-            <li><a href="{{ route('guru.izin') }}" @if(request()->routeIs('guru.izin')) class="active" @endif><i class="material-icons">event_note</i> Izin/Sakit</a></li>
-            <li><a href="{{ route('guru.pengaturan') }}" @if(request()->routeIs('guru.pengaturan')) class="active" @endif><i class="material-icons">settings</i> Pengaturan</a></li>
-        </ul>
-    </div>
+    @include('guru.components.sidebar')
     
     <!-- Top Bar -->
-    <div class="topbar">
-        <div class="clock-display" id="live-clock">00:00:00</div>
-        <div class="profile-menu dropdown-trigger" data-target="dropdown-profile">
-            <img src="{{ $user->foto_profile ? asset('storage/'.$user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5' }}" 
-                 alt="Profile" class="circle" width="40" height="40">
-            <span style="margin-left: 10px; font-weight: 500;">{{ $user->nama }}</span>
-        </div>
-        <ul id="dropdown-profile" class="dropdown-content">
-            <li><a href="{{ route('guru.profil.saya') }}"><i class="material-icons left">person</i> Profil Saya</a></li>
-            <li><a href="{{ route('guru.pengaturan') }}"><i class="material-icons left">settings</i> Pengaturan</a></li>
-            <li class="divider"></li>
-            <li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="material-icons left">exit_to_app</i> Keluar</a></li>
-        </ul>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
-    </div>
+    @include('guru.components.topbar')
     
     <!-- Main Content -->
     <div class="main-content">

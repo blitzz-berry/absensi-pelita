@@ -22,7 +22,8 @@
             margin: 0;
             padding: 0;
         }
-        
+
+        /* Sidebar Layout */
         .sidebar {
             position: fixed;
             left: 0;
@@ -34,8 +35,14 @@
             z-index: 99;
             padding-top: 60px;
             transition: all 0.3s ease;
+            transform: translateX(0);
         }
-        
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        /* Sidebar Links */
         .sidebar ul {
             list-style: none;
             padding: 0;
@@ -75,7 +82,8 @@
             width: 24px;
             text-align: center;
         }
-        
+
+        /* Topbar Layout */
         .topbar {
             position: fixed;
             top: 0;
@@ -91,21 +99,104 @@
             padding: 0 30px;
             transition: left 0.3s ease;
         }
-        
+
+        /* Main Content Layout */
         .main-content {
             margin-top: 60px;
             margin-left: 260px;
             padding: 30px;
             transition: margin-left 0.3s ease;
         }
+
+        /* Common Components */
+        .profile-menu {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .clock-display {
+            font-size: 18px;
+            font-weight: 500;
+            margin-right: 20px;
+            font-family: 'Courier New', monospace;
+            background: #f5f5f5;
+            padding: 5px 12px;
+            border-radius: 6px;
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 98;
+            display: none;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .hamburger span {
+            height: 3px;
+            width: 100%;
+            background-color: #555;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 992px) {
+            .hamburger {
+                display: flex;
+                margin-right: 20px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .topbar {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .topbar {
+                padding-left: 10px;
+            }
+        }
     </style>
 </head>
 <body>
     @yield('content')
 
+    <!-- Mobile overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
     <!-- Materialize JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    
+
     <!-- CSRF Token for AJAX requests -->
     <script>
         // Set default headers for all AJAX requests
@@ -135,7 +226,7 @@
             }, 300000); // Update every 5 minutes
         }
     </script>
-    
+
     @yield('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -143,6 +234,36 @@
             var instances = M.Dropdown.init(elems, {
                 coverTrigger: false
             });
+
+            // Hamburger menu functionality
+            const hamburger = document.querySelector('.hamburger');
+            const sidebar = document.querySelector('.sidebar');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+
+            if (hamburger && sidebar) {
+                hamburger.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('active');
+                    mobileOverlay.classList.toggle('active');
+                    document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+                });
+
+                mobileOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    mobileOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+
+                // Close sidebar when clicking on sidebar links
+                const sidebarLinks = sidebar.querySelectorAll('a');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        sidebar.classList.remove('active');
+                        mobileOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    });
+                });
+            }
         });
     </script>
 </body>

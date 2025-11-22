@@ -87,6 +87,87 @@
             transition: margin-left 0.3s ease;
         }
         
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 260px;
+            background: #ffffff;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.08);
+            z-index: 99;
+            padding-top: 60px;
+            transition: all 0.3s ease;
+            transform: translateX(0);
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 98;
+            display: none;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .hamburger span {
+            height: 3px;
+            width: 100%;
+            background-color: #555;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 992px) {
+            .hamburger {
+                display: flex;
+                margin-right: 20px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%) !important;
+                left: -260px !important;
+            }
+
+            .sidebar.active {
+                transform: translateX(0) !important;
+                left: 0 !important;
+                z-index: 1000 !important;
+            }
+
+            .topbar {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .topbar {
+                padding-left: 10px;
+            }
+        }
+
         .dashboard-card {
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -493,6 +574,11 @@
     
     <!-- Top Bar -->
     <div class="topbar">
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
         <div class="clock-display" id="live-clock">00:00:00</div>
         <div class="profile-menu dropdown-trigger" data-target="dropdown-profile">
             <img src="{{ $user->foto_profile ? asset($user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5' }}" 
@@ -509,7 +595,9 @@
             @csrf
         </form>
     </div>
-    
+
+    <!-- Mobile overlay removed (using layout's overlay) -->
+
     <!-- Main Content -->
     <div class="main-content">
         <div class="welcome-section">
