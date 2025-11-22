@@ -627,6 +627,9 @@
                     <button id="captureBtn" class="capture-btn">Ambil Foto</button>
                     <button id="submitBtn" class="capture-btn" disabled>Submit Absensi</button>
                 </div>
+                <div class="center-align" id="locationStatusMsg" style="margin-top: 10px; font-size: 14px; font-weight: 500;">
+                    <span style="color: #9E9E9E;">Menunggu Lokasi...</span>
+                </div>
                 <div id="capturedImageContainer" class="center-align"></div>
                 <p class="center-align" id="statusMessage"></p>
             </div>
@@ -647,8 +650,12 @@
             let currentStream = null;
             let capturedImage = null;
             let currentAction = null; // 'masuk' atau 'pulang'
-            let userLat = -6.200000;
-            let userLng = 106.816666;
+            let userLat = null;
+            let userLng = null;
+            let locationAccuracy = null;
+            let watchId = null;
+            const TARGET_ACCURACY = 50; // Toleransi 50 meter untuk absen cepat
+
             
             // Update live clock
             function updateClock() {
@@ -685,7 +692,53 @@
             setTimeout(updateClock, 100);
             setInterval(updateClock, 1000);
             
-            // (HAPUS DUPLIKASI VARIABEL DI SINI)
+            // (HAPUS DUPLIKASI VARIABEL DI SINI) - Done
+            
+            // Fungsi Start Tracking Location (Background)
+            function startLocationTracking() {
+                if (!navigator.geolocation) {
+                    console.error("Geolocation tidak didukung.");
+                    return;
+                }
+                
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 20000,
+                    maximumAge: 0
+                };
+                
+                watchId = navigator.geolocation.watchPosition(
+                    function(position) {
+                        userLat = position.coords.latitude;
+                        userLng = position.coords.longitude;
+                        locationAccuracy = position.coords.accuracy;
+                        
+                        // Update status di modal jika sedang terbuka
+                        const locationStatusEl = document.getElementById('locationStatusMsg');
+                        if (locationStatusEl) {
+                            if (locationAccuracy <= TARGET_ACCURACY) {
+                                locationStatusEl.innerHTML = `<span style="color: #4CAF50;"><i class="material-icons tiny">check</i> Lokasi Siap (Akurasi: ${Math.round(locationAccuracy)}m)</span>`;
+                                // Enable submit button if photo exists
+                                if(capturedImage) document.getElementById('submitBtn').disabled = false;
+                            } else {
+                                locationStatusEl.innerHTML = `<span style="color: #FF9800;"><i class="material-icons tiny">warning</i> Mencari sinyal lebih baik... (${Math.round(locationAccuracy)}m)</span>`;
+                            }
+                        }
+                    },
+                    function(error) {
+                        console.error("Error lokasi:", error);
+                        const locationStatusEl = document.getElementById('locationStatusMsg');
+                        if (locationStatusEl) {
+                            locationStatusEl.innerHTML = `<span style="color: #F44336;">Gagal mendapatkan lokasi. Pastikan GPS aktif.</span>`;
+                        }
+                    },
+                    options
+                );
+            }
+            
+            // Mulai tracking lokasi saat load
+            startLocationTracking();
+
             
             // Fungsi untuk memperbarui status absensi secara real-time
             function updateAttendanceStatus() {
@@ -845,14 +898,27 @@
                 document.getElementById('capturedImageContainer').innerHTML = 
                     '<img src="' + capturedImage + '" class="captured-image" id="capturedImagePreview" />';
                 
-                // Aktifkan tombol submit
-                document.getElementById('submitBtn').disabled = false;
+                // Cek lokasi sebelum enable tombol
+                const submitBtn = document.getElementById('submitBtn');
+                if (userLat && userLng) {
+                     // Jika akurasi masih buruk, user tetap bisa submit tapi kita warnai statusnya kuning (opsional: bisa di-block jika mau strict)
+                     // Di sini saya biarkan enable asalkan koordinat ada, agar tidak blocking user yang buru-buru.
+                     submitBtn.disabled = false;
+                } else {
+                    alert("Lokasi belum ditemukan. Tunggu sebentar...");
+                    // Tetap disabled
+                }
             });
             
             // Tombol submit absensi
             document.getElementById('submitBtn').addEventListener('click', function() {
                 if (!capturedImage) {
                     alert('Silakan ambil foto terlebih dahulu!');
+                    return;
+                }
+
+                if (!userLat || !userLng) {
+                    alert('Lokasi belum ditemukan. Mohon tunggu sebentar atau refresh halaman.');
                     return;
                 }
                 

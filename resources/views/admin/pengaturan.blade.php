@@ -523,7 +523,7 @@
                     <div class="card-content">
                         <span class="card-title">Pengaturan Umum</span>
                         
-                        <form action="{{ route('admin.pengaturan.umum.update') }}" method="POST">
+                        <form action="{{ route('admin.pengaturan.umum.update') }}" method="POST" autocomplete="off">
                             @csrf
                             @method('PUT')
                             
@@ -573,16 +573,16 @@
                                 </div>
                                 
                                 <div class="setting-item">
-                                    <div class="setting-label">Waktu Absen Masuk (Mulai)</div>
+                                    <label for="waktu_absen_masuk" class="setting-label">Waktu Absen Masuk (Mulai)</label>
                                     <div class="setting-control">
-                                        <input type="time" name="waktu_absen_masuk" value="{{ $settings['waktu_absen_masuk'] }}">
+                                        <input type="time" id="waktu_absen_masuk" name="waktu_absen_masuk" value="{{ $settings['waktu_absen_masuk'] }}" autocomplete="off">
                                     </div>
                                 </div>
                                 
                                 <div class="setting-item">
-                                    <div class="setting-label">Waktu Absen Pulang</div>
+                                    <label for="waktu_absen_pulang" class="setting-label">Waktu Absen Pulang</label>
                                     <div class="setting-control">
-                                        <input type="time" name="waktu_absen_pulang" value="{{ $settings['waktu_absen_pulang'] }}">
+                                        <input type="time" id="waktu_absen_pulang" name="waktu_absen_pulang" value="{{ $settings['waktu_absen_pulang'] }}" autocomplete="off">
                                     </div>
                                 </div>
                             </div>
@@ -590,12 +590,12 @@
                             <div class="setting-section">
                                 <div class="input-group">
                                     <label for="radius_absen">Radius Lokasi Absen (meter)</label>
-                                    <input type="number" id="radius_absen" name="radius_absen" value="{{ $settings['radius_absen'] }}" min="10" max="200">
+                                    <input type="number" id="radius_absen" name="radius_absen" value="{{ $settings['radius_absen'] }}" min="10" max="200" autocomplete="off">
                                 </div>
 
                                 <div class="input-group">
                                     <label for="pesan_pengingat">Pesan Pengingat Absensi</label>
-                                    <input type="text" id="pesan_pengingat" name="pesan_pengingat" value="{{ $settings['pesan_pengingat'] }}">
+                                    <input type="text" id="pesan_pengingat" name="pesan_pengingat" value="{{ $settings['pesan_pengingat'] }}" autocomplete="off">
                                 </div>
                             </div>
                             
@@ -648,22 +648,22 @@
                         </div>
                         
                         <!-- Form Edit Profil -->
-                        <form id="edit-profile-form" class="edit-profile-form" action="{{ route('admin.pengaturan.akun.update') }}" method="POST" enctype="multipart/form-data" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <form id="edit-profile-form" class="edit-profile-form" action="{{ route('admin.pengaturan.akun.update') }}" method="POST" enctype="multipart/form-data" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;" autocomplete="off">
                             @csrf
                             <!-- Note: Method override will be handled in JavaScript -->
 
                             <div class="input-group">
-                                <label>Nama Lengkap</label>
-                                <input type="text" name="nama" value="{{ $user->nama }}">
+                                <label for="nama">Nama Lengkap</label>
+                                <input type="text" id="nama" name="nama" value="{{ $user->nama }}" autocomplete="name">
                             </div>
 
                             <div class="input-group">
-                                <label>Email</label>
-                                <input type="email" name="email" value="{{ $user->email }}">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" value="{{ $user->email }}" autocomplete="email">
                             </div>
 
                             <div class="input-group">
-                                <label>Foto Profil</label>
+                                <label for="foto_profile">Foto Profil</label>
                                 <input type="file" name="foto_profile" id="foto_profile" accept="image/*" style="display: none;" onchange="updateFileName(this); previewImage(event);">
                                 <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2">
                                     <button class="btn btn-outline" type="button" onclick="document.getElementById('foto_profile').click()">Pilih Foto</button>
@@ -690,23 +690,23 @@
                     <div class="card-content">
                         <span class="card-title">Ganti Password</span>
                         
-                        <form id="change-password-form" action="{{ route('admin.pengaturan.password.update') }}" method="POST">
+                        <form id="change-password-form" action="{{ route('admin.pengaturan.password.update') }}" method="POST" autocomplete="off">
                             @csrf
                             <!-- Note: Method override will be handled in JavaScript -->
                             
                             <div class="input-group">
                                 <label for="current_password">Password Lama</label>
-                                <input type="password" id="current_password" name="current_password" required>
+                                <input type="password" id="current_password" name="current_password" required autocomplete="current-password">
                             </div>
 
                             <div class="input-group">
                                 <label for="new_password">Password Baru</label>
-                                <input type="password" id="new_password" name="new_password" required>
+                                <input type="password" id="new_password" name="new_password" required autocomplete="new-password">
                             </div>
 
                             <div class="input-group">
                                 <label for="new_password_confirmation">Konfirmasi Password Baru</label>
-                                <input type="password" id="new_password_confirmation" name="new_password_confirmation" required>
+                                <input type="password" id="new_password_confirmation" name="new_password_confirmation" required autocomplete="new-password">
                             </div>
                             
                             <div class="d-flex justify-content-center gap-2 mt-3">
@@ -737,7 +737,7 @@
                 console.log('Please wait, page still loading...');
             };
         }
-        
+
         if (typeof window.hideEditProfileForm === 'undefined') {
             window.hideEditProfileForm = function() {
                 console.log('Please wait, page still loading...');
@@ -784,35 +784,16 @@
                 const now = new Date();
                 const timeString = now.toLocaleTimeString();
 
-                document.getElementById('live-clock').textContent = timeString;
+                const clockElement = document.getElementById('live-clock');
+                if (clockElement) {
+                    clockElement.textContent = timeString;
+                }
             }
 
             // Update clock immediately and then every second
             updateClock();
             setInterval(updateClock, 1000);
 
-            // Add event listeners to save buttons
-            // Hanya target tombol submit utama dalam form, bukan tombol seperti 'Edit Profil' atau 'Batal'
-            const saveButtons = document.querySelectorAll('form button[type="submit"].btn-primary');
-            saveButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    // Cek apakah tombol ini adalah tombol submit untuk form edit profil
-                    if (this.closest('#edit-profile-form')) {
-                        // Ini tombol 'Simpan Perubahan' di form edit profil
-                        // Submit form edit profil menggunakan fungsi AJAX
-                        e.preventDefault(); // Mencegah submit standar
-                        console.log('Submit click intercepted, calling submitProfileForm');
-                        submitProfileForm(); // <-- Memanggil fungsi yang isinya AJAX dan notifikasi
-                    } else {
-                        // Ini tombol simpan lain, dari form pengaturan umum
-                        // Submit form pengaturan umum
-                        e.preventDefault(); // Mencegah submit standar
-                        console.log('Submit click intercepted for general setting, calling submitGeneralSettingsForm');
-                        submitGeneralSettingsForm(); // <-- Memanggil fungsi yang isinya AJAX dan notifikasi
-                    }
-                });
-            });
-            
             // Handle toggle switch text changes
             const switches = document.querySelectorAll('.admin-switch input[type="checkbox"]');
             switches.forEach(switchEl => {
@@ -821,7 +802,7 @@
                     if (controlDiv) {
                         const textOff = controlDiv.querySelector('.toggle-text-off');
                         const textOn = controlDiv.querySelector('.toggle-text-on');
-                        
+
                         if (textOff && textOn) {
                             if (this.checked) {
                                 textOff.style.color = '#999';
@@ -833,13 +814,13 @@
                         }
                     }
                 });
-                
+
                 // Initialize text colors based on checkbox state
                 const controlDiv = switchEl.closest('.setting-control');
                 if (controlDiv) {
                     const textOff = controlDiv.querySelector('.toggle-text-off');
                     const textOn = controlDiv.querySelector('.toggle-text-on');
-                    
+
                     if (textOff && textOn) {
                         if (switchEl.checked) {
                             textOff.style.color = '#999';
@@ -851,14 +832,14 @@
                     }
                 }
             });
-            
+
             // Function to show edit profile form
             function showEditProfileForm() {
                 document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
                 document.getElementById('edit-profile-button-container').style.display = 'none'; // Sembunyikan tombol Edit Profil
                 document.getElementById('edit-profile-form').style.display = 'block';
             }
-            
+
             // Function to hide edit profile form
             function hideEditProfileForm() {
                 document.querySelector('.profile-details').style.display = 'grid';  // Mengembalikan ke mode grid
@@ -866,7 +847,7 @@
                 document.getElementById('edit-profile-form').style.display = 'none';
                 document.getElementById('image-preview-container').style.display = 'none';
             }
-            
+
             // Function to update file name display
             function updateFileName(input) {
                 const fileNameDisplay = document.getElementById('file-name');
@@ -876,30 +857,30 @@
                     fileNameDisplay.textContent = 'Tidak ada file dipilih';
                 }
             }
-            
+
             // Function to preview image
             function previewImage(event) {
                 const reader = new FileReader();
                 const imagePreviewContainer = document.getElementById('image-preview-container');
                 const imagePreview = document.getElementById('image-preview');
-                
+
                 reader.onload = function(){
                     imagePreview.src = reader.result;
                     imagePreviewContainer.style.display = 'block';
                 }
                 reader.readAsDataURL(event.target.files[0]);
             }
-            
+
             // Function to reset profile form and image preview when cancel is clicked
             function resetProfileForm() {
                 document.getElementById('edit-profile-form').reset();
                 document.getElementById('file-name').textContent = 'Tidak ada file dipilih';
                 document.getElementById('image-preview-container').style.display = 'none';
-                
+
                 // Reset image preview and hide container
                 document.getElementById('image-preview').src = '';
             }
-            
+
             // Function to submit profile form using AJAX
             function submitProfileForm() {
                 console.log('submitProfileForm called');
@@ -960,16 +941,34 @@
                     if (data.success) {
                         // Update profile display with new values
                         if (data.user) {
-                            document.getElementById('profile-display').src = data.user.foto_profile || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.nama)}&color=1976D2&background=F5F5F5`;
+                            const profileDisplay = document.getElementById('profile-display');
+                            if (profileDisplay) {
+                                profileDisplay.src = data.user.foto_profile || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.nama)}&color=1976D2&background=F5F5F5`;
+                            }
 
-                            // Update profile header
-                            document.querySelector('#edit-profile-form + div .detail-value:first-child').textContent = data.user.nama;
-                            document.querySelector('#edit-profile-form + div .detail-value:nth-child(2)').textContent = data.user.email;
+                            // Update profile header - safe check for elements
+                            const profileDetailDiv = document.querySelector('#edit-profile-form + div');
+                            if (profileDetailDiv) {
+                                const firstDetailValue = profileDetailDiv.querySelector('.detail-value');
+                                if (firstDetailValue && data.user.nama) {
+                                    firstDetailValue.textContent = data.user.nama;
+                                }
+
+                                const secondDetailValue = profileDetailDiv.querySelector('.detail-value:nth-child(2)');
+                                if (secondDetailValue && data.user.email) {
+                                    secondDetailValue.textContent = data.user.email;
+                                }
+                            }
 
                             // Update profile menu in topbar
-                            document.querySelector('.profile-menu span').textContent = data.user.nama;
-                            if (data.user.foto_profile) {
-                                document.querySelector('.profile-menu img').src = data.user.foto_profile;
+                            const profileMenuSpan = document.querySelector('.profile-menu span');
+                            if (profileMenuSpan && data.user.nama) {
+                                profileMenuSpan.textContent = data.user.nama;
+                            }
+
+                            const profileMenuImg = document.querySelector('.profile-menu img');
+                            if (profileMenuImg && data.user.foto_profile) {
+                                profileMenuImg.src = data.user.foto_profile;
                             }
                         }
 
@@ -990,28 +989,130 @@
                 });
             }
 
+            // Function to submitGeneralSettingsForm using AJAX
+            function submitGeneralSettingsForm() {
+                console.log('submitGeneralSettingsForm called');
+                const form = document.querySelector('form[action="{{ route("admin.pengaturan.umum.update") }}"]');
+                if (!form) {
+                    console.error('General settings form not found!');
+                    return;
+                }
+
+                const formData = new FormData(form);
+
+                // Debug: Log the form data
+                console.log('Submitting general settings form data:', {
+                    'notifikasi_absensi': formData.get('notifikasi_absensi'),
+                    'lokasi_wajib': formData.get('lokasi_wajib'),
+                    'selfie_wajib': formData.get('selfie_wajib'),
+                    'toleransi_keterlambatan': formData.get('toleransi_keterlambatan'),
+                    'waktu_absen_masuk': formData.get('waktu_absen_masuk'),
+                    'waktu_absen_pulang': formData.get('waktu_absen_pulang'),
+                    'radius_absen': formData.get('radius_absen'),
+                    'pesan_pengingat': formData.get('pesan_pengingat')
+                });
+
+                // Show loading indicator
+                const submitBtn = form.querySelector('.btn-primary');
+                if (!submitBtn) {
+                    console.error('Submit button not found in general settings form!');
+                    return;
+                }
+
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Menyimpan...';
+                submitBtn.disabled = true;
+
+                // Tambahkan CSRF token ke formData
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+                // Cek dulu apakah CSRF token ada
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('CSRF Token:', csrfToken);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-HTTP-Method-Override': 'PUT',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    console.log('Settings update response status:', response.status);
+
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        // If not JSON, return error
+                        return response.text().then(text => {
+                            console.error('Non-JSON response received:', text.substring(0, 200) + '...');
+                            throw new Error('Server response is not in JSON format');
+                        });
+                    }
+                })
+                .then(data => {
+                    console.log('Settings update server response:', data);
+
+                    // Restore button only if it still exists
+                    if (submitBtn) {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }
+
+                    if (data.success) {
+                        // Show success notification
+                        showPasswordNotification(true, data.message || 'Pengaturan berhasil disimpan!');
+                    } else {
+                        showPasswordNotification(false, data.message || 'Gagal menyimpan pengaturan.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in settings update:', error);
+                    // Restore button only if it still exists
+                    if (submitBtn) {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }
+                    showPasswordNotification(false, 'Terjadi kesalahan saat menyimpan pengaturan. Silakan coba lagi atau hubungi administrator jika masalah berlanjut.');
+                });
+            }
+
             // Function to submit password form using AJAX
             function submitPasswordForm() {
                 console.log('submitPasswordForm called');
                 const form = document.getElementById('change-password-form');
+                if (!form) {
+                    console.error('Password form not found!');
+                    return;
+                }
+
                 const formData = new FormData(form);
 
                 // Debug: Log the form data
                 console.log('Submitting password form data:', {
-                    'password_lama': formData.get('password_lama'),
-                    'password_baru': formData.get('password_baru'),
-                    'password_baru_confirmation': formData.get('password_baru_confirmation')
+                    'current_password': formData.get('current_password'),
+                    'new_password': formData.get('new_password'),
+                    'new_password_confirmation': formData.get('new_password_confirmation')
                 });
 
                 // Additional debug - check values directly from inputs
                 console.log('Input values directly:', {
-                    'password_lama_val': document.getElementById('old_password')?.value,
-                    'password_baru_val': document.getElementById('new_password')?.value,
-                    'password_baru_confirmation_val': document.getElementById('confirm_password')?.value
+                    'current_password_val': document.getElementById('current_password')?.value,
+                    'new_password_val': document.getElementById('new_password')?.value,
+                    'new_password_confirmation_val': document.getElementById('new_password_confirmation')?.value
                 });
 
                 // Show loading indicator
-                const submitBtn = document.querySelector('#change-password-form .btn-primary');
+                const submitBtn = form.querySelector('.btn-primary');
+                if (!submitBtn) {
+                    console.error('Submit button not found in password form!');
+                    return;
+                }
+
                 const originalText = submitBtn.textContent;
                 submitBtn.textContent = 'Mengganti...';
                 submitBtn.disabled = true;
@@ -1050,31 +1151,38 @@
                 .then(data => {
                     console.log('Password change server response:', data);
 
-                    // Restore button
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
+                    // Restore button only if it still exists
+                    if (submitBtn) {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }
 
                     // Show notification
                     showPasswordNotification(data.success, data.message || (data.success ? 'Password berhasil diubah!' : 'Gagal mengganti password.'));
 
                     if (data.success) {
-                        // Reset form on success
-                        form.reset();
+                        // Reset form on success only if it still exists
+                        if (form) {
+                            form.reset();
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error in password change:', error);
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
+                    // Restore button only if it still exists
+                    if (submitBtn) {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }
                     showPasswordNotification(false, 'Terjadi kesalahan saat mengganti password. Silakan coba lagi atau hubungi administrator jika masalah berlanjut.');
                 });
             }
-            
+
             // Function to show password notification
             function showPasswordNotification(isSuccess, message) {
                 const notification = document.getElementById('password-notification');
                 const notificationMessage = document.getElementById('notification-message');
-                
+
                 if (isSuccess) {
                     notification.style.backgroundColor = '#e8f5e9';
                     notification.style.borderColor = '#4caf50';
@@ -1084,22 +1192,22 @@
                     notification.style.borderColor = '#f44336';
                     notification.style.color = '#c62828';
                 }
-                
+
                 notificationMessage.textContent = message;
                 notification.style.display = 'block';
-                
+
                 // Hide notification after 5 seconds
                 setTimeout(() => {
                     notification.style.display = 'none';
                 }, 5000);
             }
-            
+
             // Function to reset password form
             function resetPasswordForm() {
                 document.getElementById('change-password-form').reset();
                 document.getElementById('password-notification').style.display = 'none';
             }
-            
+
             // Function to show notification for profile updates
             function showNotification(isSuccess, message) {
                 // Create notification element if it doesn't exist
@@ -1162,45 +1270,96 @@
             } else {
                 console.log('Password form NOT found!');
             }
-            
+
+            // Add event listener for general settings form submission
+            const generalSettingsForm = document.querySelector('form[action="{{ route("admin.pengaturan.umum.update") }}"]');
+            if (generalSettingsForm) {
+                console.log('General settings form found, adding event listener');
+                generalSettingsForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('General settings form submit prevented, calling submitGeneralSettingsForm');
+                    submitGeneralSettingsForm();
+                });
+            } else {
+                console.log('General settings form NOT found!');
+            }
+
+            // Add event listeners to save buttons for direct click handling
+            // Only for buttons that are not already handled by form submission
+            const saveButtons = document.querySelectorAll('form button[type="submit"].btn-primary');
+            saveButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Only handle if the click is not already prevented by form submit
+                    if (this.closest('#edit-profile-form')) {
+                        // Profile form is already handled by form submit
+                    } else if (this.closest('#change-password-form')) {
+                        // Password form is already handled by form submit
+                    } else {
+                        // This is likely the general settings form button
+                        e.preventDefault();
+                        console.log('General settings button clicked, calling submitGeneralSettingsForm');
+                        submitGeneralSettingsForm();
+                    }
+                });
+            });
+
             @if(session('success'))
                 showPasswordNotification(true, '{{ session('success') }}');
             @elseif(session('error'))
                 showPasswordNotification(false, '{{ session('error') }}');
             @endif
-            
+
             // Replace global functions with actual implementations
             window.showEditProfileForm = function() {
                 document.querySelector('.profile-details').style.display = 'grid';
                 document.getElementById('edit-profile-button-container').style.display = 'none';
                 document.getElementById('edit-profile-form').style.display = 'block';
             };
-            
+
             window.hideEditProfileForm = function() {
                 document.querySelector('.profile-details').style.display = 'grid';
                 document.getElementById('edit-profile-button-container').style.display = 'flex';
                 document.getElementById('edit-profile-form').style.display = 'none';
                 document.getElementById('image-preview-container').style.display = 'none';
             };
-            
-        
-            
+
+            window.resetProfileForm = function() {
+                document.getElementById('edit-profile-form').reset();
+                document.getElementById('file-name').textContent = 'Tidak ada file dipilih';
+                document.getElementById('image-preview-container').style.display = 'none';
+                document.getElementById('image-preview').src = '';
+            };
+
             // Store references to functions in global variables
             showEditProfileFormGlobal = showEditProfileForm;
             hideEditProfileFormGlobal = hideEditProfileForm;
-            
+            resetProfileFormGlobal = resetProfileForm;
+            resetPasswordFormGlobal = resetPasswordForm;
+
         });
-        
+
         // Global functions for inline onclick handlers
         function showEditProfileForm() {
             if (typeof showEditProfileFormGlobal === 'function') {
                 showEditProfileFormGlobal();
             }
         }
-        
+
         function hideEditProfileForm() {
             if (typeof hideEditProfileFormGlobal === 'function') {
                 hideEditProfileFormGlobal();
+            }
+        }
+
+        function resetProfileForm() {
+            if (typeof resetProfileFormGlobal === 'function') {
+                resetProfileFormGlobal();
+            }
+        }
+
+        function resetPasswordForm() {
+            if (typeof resetPasswordFormGlobal === 'function') {
+                resetPasswordFormGlobal();
             }
         }
     </script>

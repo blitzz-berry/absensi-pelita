@@ -610,23 +610,23 @@
                             @method('POST')
                             
                             <div class="input-group">
-                                <label>Nama Lengkap</label>
-                                <input type="text" name="nama" value="{{ $user->nama }}">
+                                <label for="nama">Nama Lengkap</label>
+                                <input type="text" id="nama" name="nama" value="{{ $user->nama }}" autocomplete="name">
                             </div>
                             
                             <div class="input-group">
                                 <label for="email">Email</label>
-                                <input type="email" id="email" name="email" value="{{ $user->email }}">
+                                <input type="email" id="email" name="email" value="{{ $user->email }}" autocomplete="email">
                             </div>
                             
                             <div class="input-group">
-                                <label>Nomor Telepon</label>
-                                <input type="text" name="nomor_telepon" value="{{ $user->nomor_telepon ?? '' }}">
+                                <label for="nomor_telepon">Nomor Telepon</label>
+                                <input type="text" id="nomor_telepon" name="nomor_telepon" value="{{ $user->nomor_telepon ?? '' }}" autocomplete="tel">
                             </div>
 
 
                             <div class="input-group">
-                                <label>Foto Profil</label>
+                                <label for="foto_profile">Foto Profil</label>
                                 <input type="file" name="foto_profile" id="foto_profile" accept="image/*" style="display: none;" onchange="updateFileName(this); previewImage(event);">
                                 <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2">
                                     <button class="btn btn-outline" type="button" onclick="document.getElementById('foto_profile').click()">Pilih Foto</button>
@@ -659,18 +659,18 @@
                             @method('POST')
                             
                             <div class="input-group">
-                                <label>Password Lama</label>
-                                <input type="password" name="current_password" id="old_password" required>
+                                <label for="old_password">Password Lama</label>
+                                <input type="password" name="current_password" id="old_password" required autocomplete="current-password">
                             </div>
                             
                             <div class="input-group">
-                                <label>Password Baru</label>
-                                <input type="password" name="new_password" id="new_password" required>
+                                <label for="new_password">Password Baru</label>
+                                <input type="password" name="new_password" id="new_password" required autocomplete="new-password">
                             </div>
                             
                             <div class="input-group">
-                                <label>Konfirmasi Password Baru</label>
-                                <input type="password" name="new_password_confirmation" id="confirm_password" required>
+                                <label for="confirm_password">Konfirmasi Password Baru</label>
+                                <input type="password" name="new_password_confirmation" id="confirm_password" required autocomplete="new-password">
                             </div>
                             
                             <div class="d-flex justify-content-center gap-2 mt-3">
@@ -953,15 +953,20 @@
                                 const topbarProfile = document.querySelector('.topbar .profile-menu img');
                                 
                                 // Update name and email in the view if they were provided
-                                if (nama) {
-                                    document.querySelector('.profile-header h3').textContent = nama;
-                                    document.querySelector('.detail-value').textContent = nama;
-                                    document.querySelector('.profile-info h3').textContent = nama;
+                                if (nama && userName) {
+                                    userName.textContent = nama;
+                                    const detailName = document.querySelector('.detail-item:nth-child(1) .detail-value');
+                                    if (detailName) detailName.textContent = nama;
+                                    const infoName = document.querySelector('.profile-info h3');
+                                    if (infoName) infoName.textContent = nama;
                                 }
                                 
-                                if (email) {
-                                    document.querySelector('.profile-header p').textContent = email;
-                                    document.querySelector('.profile-info p').textContent = email;
+                                if (email && userEmail) {
+                                    userEmail.textContent = email;
+                                    const detailEmail = document.querySelector('.detail-item:nth-child(2) .detail-value');
+                                    if (detailEmail) detailEmail.textContent = email;
+                                    const infoEmail = document.querySelector('.profile-info p');
+                                    if (infoEmail) infoEmail.textContent = email;
                                 }
                                 
                                 // Update foto profile in all locations if it was changed
@@ -1041,14 +1046,25 @@
                             if (data.success) {
                                 // Update user profile information in the view
                                 if (nama) {
-                                    document.querySelector('.profile-header h3').textContent = nama;
-                                    document.querySelector('.detail-value').textContent = nama;
-                                    document.querySelector('.profile-info h3').textContent = nama;
+                                    const headerName = document.querySelector('.profile-header h3');
+                                    if (headerName) headerName.textContent = nama;
+                                    
+                                    const detailName = document.querySelector('.detail-item:nth-child(1) .detail-value');
+                                    if (detailName) detailName.textContent = nama;
+                                    
+                                    const infoName = document.querySelector('.profile-info h3');
+                                    if (infoName) infoName.textContent = nama;
                                 }
                                 
                                 if (email) {
-                                    document.querySelector('.profile-header p').textContent = email;
-                                    document.querySelector('.profile-info p').textContent = email;
+                                    const headerEmail = document.querySelector('.profile-header p');
+                                    if (headerEmail) headerEmail.textContent = email;
+                                    
+                                    const detailEmail = document.querySelector('.detail-item:nth-child(2) .detail-value');
+                                    if (detailEmail) detailEmail.textContent = email;
+                                    
+                                    const infoEmail = document.querySelector('.profile-info p');
+                                    if (infoEmail) infoEmail.textContent = email;
                                 }
                                 
                                 // Show success notification

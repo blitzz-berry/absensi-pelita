@@ -159,6 +159,7 @@
             <form method="POST" action="{{ route('login.process') }}">
                 @csrf
                 <div class="input-field">
+                    <label for="login_field" class="sr-only" style="display:none;">Nomor ID</label>
                     <input id="login_field" type="text" name="login_field" value="{{ old('login_field') }}" required autocomplete="off" placeholder="Masukkan Nomor ID">
                     @error('login_field')
                         <div class="error-message">{{ $message }}</div>
@@ -167,7 +168,8 @@
 
                 <div class="input-field">
                     <div style="position: relative;">
-                        <input id="password" type="password" name="password" required placeholder="Masukkan Password">
+                        <label for="password" class="sr-only" style="display:none;">Password</label>
+                        <input id="password" type="password" name="password" required autocomplete="current-password" placeholder="Masukkan Password">
                         <span style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer;" onclick="togglePassword()">
                             <i class="material-icons" id="togglePasswordIcon">visibility</i>
                         </span>
