@@ -257,49 +257,54 @@
             gap: 15px;
         }
         
+        /* From Uiverse.io by zanina-yassine */
+        /* The switch - the box around the slider */
+        .container {
+          width: 51px;
+          height: 31px;
+          position: relative;
+          display: inline-block;
+        }
+
+        /* Hide default HTML checkbox */
+        .checkbox {
+          opacity: 0;
+          width: 0;
+          height: 0;
+          position: absolute;
+        }
+
         .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
+          width: 100%;
+          height: 100%;
+          display: block;
+          background-color: #e9e9eb;
+          border-radius: 16px;
+          cursor: pointer;
+          transition: all 0.2s ease-out;
         }
-        
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
+
+        /* The slider */
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
+          width: 27px;
+          height: 27px;
+          position: absolute;
+          left: calc(50% - 27px/2 - 10px);
+          top: calc(50% - 27px/2);
+          border-radius: 50%;
+          background: #FFFFFF;
+          box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15), 0px 3px 1px rgba(0, 0, 0, 0.06);
+          transition: all 0.2s ease-out;
+          cursor: pointer;
         }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+
+        .checkbox:checked + .switch {
+          background-color: #34C759;
         }
-        
-        input:checked + .slider {
-            background-color: #1976D2;
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
+
+        .checkbox:checked + .switch .slider {
+          left: calc(50% - 27px/2 + 10px);
+          top: calc(50% - 27px/2);
         }
         
         .btn {
@@ -368,51 +373,7 @@
             gap: 10px;
         }
         
-        div.setting-item .setting-control .admin-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 30px;
-        }
-        
-        div.setting-item .setting-control .admin-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        div.setting-item .setting-control .admin-switch .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 30px; /* Radius setengah dari tinggi */
-        }
-        
-        div.setting-item .setting-control .admin-switch .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        div.setting-item .setting-control .admin-switch input:checked + .slider {
-            background-color: #1976D2;
-        }
-        
-        div.setting-item .setting-control .admin-switch input:checked + .slider:before {
-            transform: translateX(30px); /* 60px - 22px - 4px - 4px = 30px */
-        }
+
         
         .setting-control {
             display: flex;
@@ -619,32 +580,36 @@
                                 <div class="setting-item">
                                     <div class="setting-label">Notifikasi Absensi</div>
                                     <div class="setting-control">
-                                        <span class="toggle-text-off" style="{{ $settings['notifikasi_absensi'] ? 'color: #999;' : 'color: #1976D2;' }}">Nonaktif</span>
-                                        <label class="admin-switch">
-                                            <input type="checkbox" name="notifikasi_absensi" value="1" {{ $settings['notifikasi_absensi'] ? 'checked' : '' }}>
-                                            <span class="slider"></span>
-                                        </label>
-                                        <span class="toggle-text-on" style="{{ $settings['notifikasi_absensi'] ? 'color: #1976D2;' : 'color: #999;' }}">Aktif</span>
+                                        <div class="container">
+                                            <input type="checkbox" class="checkbox" name="notifikasi_absensi" value="1" id="notifikasi_absensi" {{ $settings['notifikasi_absensi'] ? 'checked' : '' }}>
+                                            <label class="switch" for="notifikasi_absensi">
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="setting-item">
                                     <div class="setting-label">Lokasi Wajib Absen</div>
                                     <div class="setting-control">
-                                        <label class="admin-switch">
-                                            <input type="checkbox" name="lokasi_wajib" value="1" {{ $settings['lokasi_wajib'] ? 'checked' : '' }}>
-                                            <span class="slider"></span>
-                                        </label>
+                                        <div class="container">
+                                            <input type="checkbox" class="checkbox" name="lokasi_wajib" value="1" id="lokasi_wajib" {{ $settings['lokasi_wajib'] ? 'checked' : '' }}>
+                                            <label class="switch" for="lokasi_wajib">
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="setting-item">
                                     <div class="setting-label">Selfie Wajib Absen</div>
                                     <div class="setting-control">
-                                        <label class="admin-switch">
-                                            <input type="checkbox" name="selfie_wajib" value="1" {{ $settings['selfie_wajib'] ? 'checked' : '' }}>
-                                            <span class="slider"></span>
-                                        </label>
+                                        <div class="container">
+                                            <input type="checkbox" class="checkbox" name="selfie_wajib" value="1" id="selfie_wajib" {{ $settings['selfie_wajib'] ? 'checked' : '' }}>
+                                            <label class="switch" for="selfie_wajib">
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -882,44 +847,8 @@
             updateClock();
             setInterval(updateClock, 1000);
 
-            // Handle toggle switch text changes
-            const switches = document.querySelectorAll('.admin-switch input[type="checkbox"]');
-            switches.forEach(switchEl => {
-                switchEl.addEventListener('change', function() {
-                    const controlDiv = this.closest('.setting-control');
-                    if (controlDiv) {
-                        const textOff = controlDiv.querySelector('.toggle-text-off');
-                        const textOn = controlDiv.querySelector('.toggle-text-on');
+            // Toggle switch text handlers removed as UI simplified
 
-                        if (textOff && textOn) {
-                            if (this.checked) {
-                                textOff.style.color = '#999';
-                                textOn.style.color = '#1976D2';
-                            } else {
-                                textOff.style.color = '#1976D2';
-                                textOn.style.color = '#999';
-                            }
-                        }
-                    }
-                });
-
-                // Initialize text colors based on checkbox state
-                const controlDiv = switchEl.closest('.setting-control');
-                if (controlDiv) {
-                    const textOff = controlDiv.querySelector('.toggle-text-off');
-                    const textOn = controlDiv.querySelector('.toggle-text-on');
-
-                    if (textOff && textOn) {
-                        if (switchEl.checked) {
-                            textOff.style.color = '#999';
-                            textOn.style.color = '#1976D2';
-                        } else {
-                            textOff.style.color = '#1976D2';
-                            textOn.style.color = '#999';
-                        }
-                    }
-                }
-            });
 
             // Function to show edit profile form
             function showEditProfileForm() {
