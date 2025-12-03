@@ -50,6 +50,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/rekap-absensi/generate', [GuruController::class, 'generateRekap'])->name('admin.rekap-absensi.generate');
         // Route untuk ekspor global (POST) - hanya Excel
         Route::post('/admin/rekap-absensi/export-excel', [GuruController::class, 'exportExcelGlobal'])->name('admin.rekap-absensi.export.excel.global');
+        // Route untuk ekspor gaji global (POST) - hanya Excel
+        Route::post('/admin/rekap-absensi/export-gaji-excel', [GuruController::class, 'exportExcelGajiGlobal'])->name('admin.rekap-absensi.export.gaji.excel.global');
         // Route untuk ekspor per guru (GET dengan user_id, bulan, tahun sebagai query params) - hanya Excel
         Route::get('/admin/rekap-absensi/export-excel/{user_id}', [GuruController::class, 'exportExcelPerGuru'])->name('admin.rekap-absensi.export.excel');
     });

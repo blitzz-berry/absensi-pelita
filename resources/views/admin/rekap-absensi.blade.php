@@ -680,39 +680,104 @@
         
         <div class="card dashboard-card">
             <div class="card-content">
-                <!-- Filter Section -->
-                <form method="GET" action="{{ route('admin.rekap-absensi') }}">
-                    <div class="filter-section">
-                        <div class="filter-group">
-                            <label for="tanggal">Tanggal</label>
-                            <input type="date" name="tanggal" id="tanggal" class="filter-control" value="{{ $tanggal ?? date('Y-m-d') }}">
+                <!-- Combined Filter Section for Daily Recap and Monthly Export -->
+                <div class="filter-section" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: end; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #e0e0e0;">
+                    <!-- Form Filter Harian -->
+                    <form method="GET" action="{{ route('admin.rekap-absensi') }}" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: end; flex: 1 1 280px;">
+                        <div class="filter-subgroup" style="display: flex; flex-direction: column; flex: 1 1 150px;">
+                            <label for="tanggal" style="font-size: 13px; font-weight: 500; color: #424242;">Tanggal Harian</label>
+                            <input type="date" name="tanggal" id="tanggal" class="filter-control" value="{{ $tanggal ?? date('Y-m-d') }}" style="padding: 8px 10px; font-size: 13px;">
                         </div>
 
-                        <button type="submit" class="btn-filter">
-                            <i class="material-icons">autorenew</i> Tampilkan Data
+                        <button type="submit" class="btn-export" style="margin-bottom: 2px; white-space: nowrap; padding: 10px 16px; font-size: 13px;">
+                            <i class="material-icons" style="font-size: 18px;">autorenew</i> Tampilkan
                         </button>
-                    </div>
-                </form>
+                    </form>
 
-                <!-- Current Period Display -->
-                <div class="current-period">
-                    <h5>Tanggal:
-                        <span class="period-value">
-                            @if($tanggal)
-                                {{ \Carbon\Carbon::parse($tanggal)->format('j F Y') }}
-                            @else
-                                Belum dipilih
-                            @endif
-                        </span>
-                    </h5>
-                </div>
-                
+                    <!-- Container untuk Input Bulan/Tahun dan Tombol Export (Rekap & Gaji) -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: end; flex: 1 1 320px;">
+                        <!-- Input Bulan dan Tahun (digunakan bersama untuk kedua export) -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                            <div class="filter-subgroup" style="display: flex; flex-direction: column; flex: 1 1 100px;">
+                                <select name="bulan_export" id="bulan_export" class="filter-control" style="padding: 8px 10px; font-size: 13px;" onchange="updateFormAction()">
+                                    <option value="01" {{ date('m') == '01' ? 'selected' : '' }}>Jan</option>
+                                    <option value="02" {{ date('m') == '02' ? 'selected' : '' }}>Feb</option>
+                                    <option value="03" {{ date('m') == '03' ? 'selected' : '' }}>Mar</option>
+                                    <option value="04" {{ date('m') == '04' ? 'selected' : '' }}>Apr</option>
+                                    <option value="05" {{ date('m') == '05' ? 'selected' : '' }}>Mei</option>
+                                    <option value="06" {{ date('m') == '06' ? 'selected' : '' }}>Jun</option>
+                                    <option value="07" {{ date('m') == '07' ? 'selected' : '' }}>Jul</option>
+                                    <option value="08" {{ date('m') == '08' ? 'selected' : '' }}>Agu</option>
+                                    <option value="09" {{ date('m') == '09' ? 'selected' : '' }}>Sep</option>
+                                    <option value="10" {{ date('m') == '10' ? 'selected' : '' }}>Okt</option>
+                                    <option value="11" {{ date('m') == '11' ? 'selected' : '' }}>Nov</option>
+                                    <option value="12" {{ date('m') == '12' ? 'selected' : '' }}>Des</option>
+                                </select>
+                            </div>
+                            <div class="filter-subgroup" style="display: flex; flex-direction: column; flex: 1 1 100px;">
+                                <select name="tahun_export" id="tahun_export" class="filter-control" style="padding: 8px 10px; font-size: 13px;" onchange="updateFormAction()">
+                                    <?php
+                                    $currentYear = date('Y');
+                                    $startYear = $currentYear - 5;
+                                    $endYear = $currentYear + 2;
+                                    for ($i = $startYear; $i <= $endYear; $i++) {
+                                        $selected = ($i == $currentYear) ? 'selected' : '';
+                                        echo "<option value='$i' $selected>$i</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Export Rekap dan Gaji -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <!-- Form Export Rekap (dengan action yang diupdate oleh JS) -->
+                            <form method="POST" action="{{ route('admin.rekap-absensi.export.excel.global') }}" id="export-rekap-form" style="margin: 0;">
+                                @csrf
+                                <input type="hidden" name="bulan" id="bulan_rekap" value="{{ date('m') }}">
+                                <input type="hidden" name="tahun" id="tahun_rekap" value="{{ date('Y') }}">
+                                <button type="submit" class="btn-export" id="btn-export-rekap" style="margin-bottom: 2px; padding: 10px 16px; font-size: 13px;">
+                                    <i class="material-icons" style="font-size: 18px;">file_download</i> Export Rekap
+                                </button>
+                            </form>
+
+                            <!-- Form Export Gaji (dengan action yang diupdate oleh JS) -->
+                            <form method="POST" action="{{ route('admin.rekap-absensi.export.gaji.excel.global') }}" id="export-gaji-form" style="margin: 0;">
+                                @csrf
+                                <input type="hidden" name="bulan" id="bulan_gaji" value="{{ date('m') }}">
+                                <input type="hidden" name="tahun" id="tahun_gaji" value="{{ date('Y') }}">
+                                <button type="submit" class="btn-export" id="btn-export-gaji" style="margin-bottom: 2px; padding: 10px 16px; font-size: 13px; background: linear-gradient(135deg, #9C27B0, #7B1FA2);">
+                                    <i class="material-icons" style="font-size: 18px;">file_download</i> Export Gaji
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div> <!-- End of .filter-section -->
+
+                <script>
+                    function updateFormAction() {
+                        const bulanVal = document.getElementById('bulan_export').value;
+                        const tahunVal = document.getElementById('tahun_export').value;
+
+                        // Update nilai hidden input di form rekap
+                        document.getElementById('bulan_rekap').value = bulanVal;
+                        document.getElementById('tahun_rekap').value = tahunVal;
+
+                        // Update nilai hidden input di form gaji
+                        document.getElementById('bulan_gaji').value = bulanVal;
+                        document.getElementById('tahun_gaji').value = tahunVal;
+                    }
+
+                    // Panggil sekali saat halaman load untuk set nilai awal
+                    updateFormAction();
+                </script>
+
                 @if(session('success'))
                     <div class="success-message">
                         {{ session('success') }}
                     </div>
                 @endif
-                
+
                 <!-- Action Buttons -->
                 <div class="action-buttons">
                     <!-- Tombol export global (bulan/tahun) dihapus karena filter sekarang berdasarkan tanggal -->

@@ -39,8 +39,8 @@ class AuthController extends Controller
 
         // Cari user berdasarkan email atau nomor_id
         $loginField = $credentials['login_field'];
-        $user = User::where('email', $loginField)
-                    ->orWhere('nomor_id', $loginField)
+        $user = User::whereRaw('LOWER(email) = ?', [strtolower($loginField)])
+                    ->orWhereRaw('LOWER(nomor_id) = ?', [strtolower($loginField)])
                     ->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {

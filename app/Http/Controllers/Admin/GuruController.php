@@ -674,7 +674,8 @@ class GuruController extends Controller
     
     
     /**
-     * Export rekap absensi to Excel (Global - All Users)
+     * Export rekap absensi to Excel (Global - All Users).
+     * This will also generate the recap if it doesn't exist for the selected month/year.
      */
     public function exportExcelGlobal(Request $request)
     {
@@ -691,10 +692,135 @@ class GuruController extends Controller
             return redirect()->back()->with('error', 'Excel export package not installed. Please run: composer require maatwebsite/excel');
         }
 
+        // --- Generate Recap if not exists for the selected month/year ---
+        // Ambil semua guru
+        $guru = User::where('role', 'guru')->get();
+
+        foreach ($guru as $g) {
+            // Hitung jumlah kehadiran per status untuk bulan dan tahun tertentu
+            $absensi = \App\Models\Absensi::where('user_id', $g->id)
+                ->whereMonth('tanggal', $bulan)
+                ->whereYear('tanggal', $tahun)
+                ->get();
+
+            // Hitung jumlah per status
+            $jumlah_hadir = $absensi->where('status', 'hadir')->count();
+            $jumlah_terlambat = $absensi->where('status', 'terlambat')->count();
+            $jumlah_izin = $absensi->where('status', 'izin')->count();
+            $jumlah_sakit = $absensi->where('status', 'sakit')->count();
+            $jumlah_alpha = $absensi->where('status', 'alpha')->count();
+
+            // Cek apakah sudah ada rekap untuk bulan dan tahun ini
+            $rekap = \App\Models\RekapAbsensi::where('user_id', $g->id)
+                ->where('bulan', $bulan)
+                ->where('tahun', $tahun)
+                ->first();
+
+            if ($rekap) {
+                // Update jika sudah ada
+                $rekap->update([
+                    'jumlah_hadir' => $jumlah_hadir,
+                    'jumlah_terlambat' => $jumlah_terlambat,
+                    'jumlah_izin' => $jumlah_izin,
+                    'jumlah_sakit' => $jumlah_sakit,
+                    'jumlah_alpha' => $jumlah_alpha,
+                ]);
+            } else {
+                // Buat baru jika belum ada
+                \App\Models\RekapAbsensi::create([
+                    'user_id' => $g->id,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                    'jumlah_hadir' => $jumlah_hadir,
+                    'jumlah_terlambat' => $jumlah_terlambat,
+                    'jumlah_izin' => $jumlah_izin,
+                    'jumlah_sakit' => $jumlah_sakit,
+                    'jumlah_alpha' => $jumlah_alpha,
+                ]);
+            }
+        }
+        // --- End of Generate Recap ---
+
         // Use Excel facade to download
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\RekapAbsensiExport($bulan, $tahun),
             'rekap-absensi-'.$bulan.'-'.$tahun.'.xlsx'
+        );
+    }
+
+    /**
+     * Export rekap absensi gaji (Uang Transport & Makan) to Excel (Global - All Users).
+     * This will calculate based on daily allowance and attendance count.
+     * This also generates the recap if it doesn't exist for the selected month/year.
+     */
+    public function exportExcelGajiGlobal(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+
+        $bulan = $request->bulan ?? date('m');
+        $tahun = $request->tahun ?? date('Y');
+
+        // Check if maatwebsite/excel is available
+        if (!class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
+            return redirect()->back()->with('error', 'Excel export package not installed. Please run: composer require maatwebsite/excel');
+        }
+
+        // --- Generate Recap if not exists for the selected month/year (same logic as exportExcelGlobal) ---
+        // Ambil semua guru
+        $guru = User::where('role', 'guru')->get();
+
+        foreach ($guru as $g) {
+            // Hitung jumlah kehadiran per status untuk bulan dan tahun tertentu
+            $absensi = \App\Models\Absensi::where('user_id', $g->id)
+                ->whereMonth('tanggal', $bulan)
+                ->whereYear('tanggal', $tahun)
+                ->get();
+
+            // Hitung jumlah per status
+            $jumlah_hadir = $absensi->where('status', 'hadir')->count();
+            $jumlah_terlambat = $absensi->where('status', 'terlambat')->count();
+            $jumlah_izin = $absensi->where('status', 'izin')->count();
+            $jumlah_sakit = $absensi->where('status', 'sakit')->count();
+            $jumlah_alpha = $absensi->where('status', 'alpha')->count();
+
+            // Cek apakah sudah ada rekap untuk bulan dan tahun ini
+            $rekap = \App\Models\RekapAbsensi::where('user_id', $g->id)
+                ->where('bulan', $bulan)
+                ->where('tahun', $tahun)
+                ->first();
+
+            if ($rekap) {
+                // Update jika sudah ada
+                $rekap->update([
+                    'jumlah_hadir' => $jumlah_hadir,
+                    'jumlah_terlambat' => $jumlah_terlambat,
+                    'jumlah_izin' => $jumlah_izin,
+                    'jumlah_sakit' => $jumlah_sakit,
+                    'jumlah_alpha' => $jumlah_alpha,
+                ]);
+            } else {
+                // Buat baru jika belum ada
+                \App\Models\RekapAbsensi::create([
+                    'user_id' => $g->id,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                    'jumlah_hadir' => $jumlah_hadir,
+                    'jumlah_terlambat' => $jumlah_terlambat,
+                    'jumlah_izin' => $jumlah_izin,
+                    'jumlah_sakit' => $jumlah_sakit,
+                    'jumlah_alpha' => $jumlah_alpha,
+                ]);
+            }
+        }
+        // --- End of Generate Recap ---
+
+        // Use Excel facade to download using the new export class
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\RekapAbsensiGajiExport($bulan, $tahun),
+            'rekap-gaji-absensi-'.$bulan.'-'.$tahun.'.xlsx'
         );
     }
 

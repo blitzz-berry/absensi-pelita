@@ -24,11 +24,17 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'name' => '', // Biarkan kosong karena di model tidak digunakan
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => 'guru',
+            'nama' => fake()->name(),
+            'nomor_id' => 'TEST-' . fake()->unique()->numberBetween(100, 999),
+            'nomor_telepon' => fake()->phoneNumber(),
+            'jabatan' => 'Guru',
+            'gelar' => 'S.Pd',
         ];
     }
 
@@ -39,6 +45,19 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Define state for admin user
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+            'email' => $attributes['email'] ?? fake()->unique()->safeEmail(),
+            'nama' => 'Admin Test',
+            'nomor_id' => 'ADM-' . fake()->unique()->numberBetween(100, 999),
         ]);
     }
 }
