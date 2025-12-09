@@ -229,17 +229,17 @@
             var instances = M.Dropdown.init(elems, {
                 coverTrigger: false
             });
-            
+
             // Update live clock
             function updateClock() {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString();
                 document.getElementById('live-clock').textContent = timeString;
             }
-            
+
             updateClock();
             setInterval(updateClock, 1000);
-            
+
             // Variabel Global
             let map = null;
             let marker = null;
@@ -247,31 +247,108 @@
             let watchId = null;
             let bestAccuracy = Infinity;
             const TARGET_ACCURACY = 20; // Target akurasi dalam meter
-            
+            const LOCATION_TIMEOUT = 5 * 60 * 1000; // 5 menit dalam milidetik
+
+            // Fungsi baca lokasi dari localStorage
+            function getLastLocation() {
+                try {
+                    const stored = localStorage.getItem('last_location');
+                    if (!stored) return null;
+
+                    const data = JSON.parse(stored);
+                    const now = Date.now();
+                    const elapsed = now - data.timestamp;
+
+                    // Cek apakah lokasi masih valid (kurang dari 5 menit)
+                    if (elapsed < LOCATION_TIMEOUT) {
+                        return data;
+                    } else {
+                        // Hapus data lama jika sudah kadaluarsa
+                        localStorage.removeItem('last_location');
+                        return null;
+                    }
+                } catch (e) {
+                    console.error('Error reading location from storage:', e);
+                    return null;
+                }
+            }
+
+            // Fungsi simpan lokasi ke localStorage
+            function saveLocation(lat, lng, accuracy) {
+                const data = {
+                    lat: lat,
+                    lng: lng,
+                    accuracy: accuracy,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('last_location', JSON.stringify(data));
+            }
+
+            // Tampilin lokasi terakhir yang valid
+            function displayLastLocation(locationData) {
+                const displayEl = document.getElementById('location-display');
+                const statusEl = document.getElementById('location-status');
+                const accuracyEl = document.getElementById('accuracy-display');
+                const locationBtn = document.getElementById('getLocationBtn');
+
+                displayEl.textContent = `Lokasi: ${locationData.lat.toFixed(7)}, ${locationData.lng.toFixed(7)}`;
+
+                let accuracyHtml = `Akurasi: <strong>${Math.round(locationData.accuracy)} meter</strong>`;
+                let accuracyClass = '';
+
+                if (locationData.accuracy <= TARGET_ACCURACY) {
+                    accuracyHtml += ` <i class="material-icons tiny" style="vertical-align: middle;">check_circle</i> Lokasi Terakhir (Valid)`;
+                    accuracyClass = 'accuracy-good';
+                    statusEl.textContent = 'Terakhir Digunakan (Valid)';
+                    statusEl.style.color = '#4CAF50';
+                    locationBtn.innerHTML = '<i class="material-icons left">my_location</i> Gunakan Lokasi Ini';
+                    locationBtn.disabled = false;
+                } else {
+                    accuracyHtml += ` <i class="material-icons tiny" style="vertical-align: middle;">warning</i> Lokasi Tidak Akurat`;
+                    accuracyClass = 'accuracy-bad';
+                    statusEl.textContent = 'Lokasi Tidak Akurat';
+                    statusEl.style.color = '#FF9800';
+                    locationBtn.innerHTML = '<i class="material-icons left">refresh</i> Perbarui Lokasi';
+                    locationBtn.disabled = false;
+                }
+
+                accuracyEl.innerHTML = `<div class="accuracy-info ${accuracyClass}">${accuracyHtml}</div>`;
+
+                // Update peta dengan lokasi terakhir
+                if (map && marker) {
+                    marker.setLatLng([locationData.lat, locationData.lng]);
+                    if (circle) {
+                        circle.setLatLng([locationData.lat, locationData.lng]);
+                        circle.setRadius(locationData.accuracy);
+                    }
+                    map.setView([locationData.lat, locationData.lng], 18);
+                }
+            }
+
             // Inisialisasi Peta
             function initMap() {
                 // Default coordinate (Indonesia)
                 map = L.map('location-map').setView([-6.2088, 106.8456], 13);
-                
+
                 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(map);
             }
-            
+
             // Panggil initMap saat halaman load, tapi sembunyikan marker dulu
             initMap();
 
             // Fungsi update UI Peta
             function updateMap(lat, lng, accuracy) {
                 const latLng = [lat, lng];
-                
+
                 if (!marker) {
                     marker = L.marker(latLng).addTo(map);
                 } else {
                     marker.setLatLng(latLng);
                 }
-                
+
                 if (!circle) {
                     circle = L.circle(latLng, {
                         color: '#1976D2',
@@ -283,22 +360,33 @@
                     circle.setLatLng(latLng);
                     circle.setRadius(accuracy);
                 }
-                
+
                 map.setView(latLng, 18); // Zoom in dekat
             }
-            
+
+            // Cek apakah ada lokasi valid sebelumnya saat halaman dibuka
+            const lastLocation = getLastLocation();
+            if (lastLocation) {
+                displayLastLocation(lastLocation);
+
+                // Update tombol untuk mengganti lokasi atau gunakan lokasi yang ada
+                const locationBtn = document.getElementById('getLocationBtn');
+                locationBtn.innerHTML = '<i class="material-icons left">my_location</i> Gunakan Lokasi Ini';
+                locationBtn.disabled = false;
+            }
+
             // Fungsi untuk mendapatkan lokasi dengan watchPosition
             function startTracking() {
                 const locationBtn = document.getElementById('getLocationBtn');
                 const statusEl = document.getElementById('location-status');
                 const displayEl = document.getElementById('location-display');
                 const accuracyEl = document.getElementById('accuracy-display');
-                
+
                 locationBtn.innerHTML = '<span class="loading"></span> Mencari Sinyal Terbaik...';
                 locationBtn.disabled = true;
                 statusEl.textContent = "Mencari Sinyal...";
                 statusEl.style.color = "#FF9800"; // Orange
-                
+
                 if (!navigator.geolocation) {
                     displayEl.textContent = "Geolocation tidak didukung browser ini.";
                     return;
@@ -318,39 +406,45 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         const accuracy = position.coords.accuracy;
-                        
+
                         // Update UI Teks
                         displayEl.textContent = `Lokasi: ${lat.toFixed(7)}, ${lng.toFixed(7)}`;
-                        
+
                         // Cek apakah ini lokasi paling akurat sejauh ini
                         if (accuracy < bestAccuracy) {
                             bestAccuracy = accuracy;
+
+                            // Simpan lokasi terbaik ke localStorage
+                            saveLocation(lat, lng, accuracy);
                         }
 
                         // Update Status Akurasi
                         let accuracyHtml = `Akurasi: <strong>${Math.round(accuracy)} meter</strong>`;
                         let accuracyClass = '';
-                        
+
                         if (accuracy <= TARGET_ACCURACY) {
                             accuracyHtml += ` <i class="material-icons tiny" style="vertical-align: middle;">check_circle</i> Sangat Baik`;
                             accuracyClass = 'accuracy-good';
-                            
+
                             // Jika akurasi sudah bagus, update status jadi hijau
                             statusEl.textContent = 'Terverifikasi (Akurat)';
                             statusEl.style.color = '#4CAF50';
                             locationBtn.innerHTML = '<i class="material-icons left">my_location</i> Lokasi Akurat Ditemukan';
                             locationBtn.disabled = false;
+
+                            // Stop watchPosition karena udah dapet akurasi bagus
+                            if(watchId) navigator.geolocation.clearWatch(watchId);
                         } else {
                             accuracyHtml += ` <i class="material-icons tiny" style="vertical-align: middle;">warning</i> Mencari sinyal lebih baik...`;
                             accuracyClass = 'accuracy-bad';
-                            
+
                             // Masih mencari
                             statusEl.textContent = 'Mencari presisi...';
                             statusEl.style.color = '#FF9800';
                         }
-                        
+
                         accuracyEl.innerHTML = `<div class="accuracy-info ${accuracyClass}">${accuracyHtml}</div>`;
-                        
+
                         // Update Peta
                         updateMap(lat, lng, accuracy);
                     },
@@ -367,22 +461,30 @@
                         statusEl.style.color = "#F44336";
                         locationBtn.disabled = false;
                         locationBtn.innerHTML = '<i class="material-icons left">refresh</i> Coba Lagi';
-                        
+
                         // Stop watching on error
                         if(watchId) navigator.geolocation.clearWatch(watchId);
                     },
                     options
                 );
             }
-            
+
             // Event listener untuk tombol lokasi
             document.getElementById('getLocationBtn').addEventListener('click', function() {
-                // Jika sedang tracking, stop dulu (reset)
-                if (watchId) {
-                    navigator.geolocation.clearWatch(watchId);
-                    watchId = null;
+                // Cek apakah tombol digunakan untuk "Gunakan Lokasi Ini" atau "Perbarui Lokasi"
+                const currentText = this.innerHTML;
+
+                if (currentText.includes('Gunakan Lokasi Ini') || currentText.includes('Lokasi Terakhir')) {
+                    // Jika tombol mengatakan "Gunakan Lokasi Ini", berikan feedback bahwa lokasi siap digunakan
+                    M.toast({html: 'Lokasi terakhir siap digunakan!'});
+                } else {
+                    // Jika sedang tracking, stop dulu (reset)
+                    if (watchId) {
+                        navigator.geolocation.clearWatch(watchId);
+                        watchId = null;
+                    }
+                    startTracking();
                 }
-                startTracking();
             });
         });
     </script>

@@ -908,4 +908,90 @@ class GuruController extends Controller
         $namaGuru = \Str::slug($guru->nama, '_');
         return \Maatwebsite\Excel\Facades\Excel::download($exportClass, 'absensi-harian-'.$namaGuru.'-'.$tanggal.'.xlsx');
     }
+
+    /**
+     * Get lokasi kehadiran guru untuk tanggal tertentu (untuk peta kehadiran).
+     */
+    public function getLokasiKehadiran(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $tanggal = $request->tanggal ?? date('Y-m-d');
+        $status = $request->status ?? null; // Filter berdasarkan status kehadiran
+
+        // Ambil data absensi dengan lokasi untuk tanggal tertentu
+        $query = \App\Models\Absensi::with('user:id,nama,gelar,jabatan')
+            ->where('tanggal', $tanggal)
+            ->where(function($q) {
+                $q->whereNotNull('lokasi_masuk')
+                  ->orWhereNotNull('lokasi_pulang');
+            });
+
+        // Tambahkan filter status jika disediakan
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $absensi = $query->get();
+
+        // Format data untuk peta
+        $lokasiGuru = [];
+        foreach ($absensi as $item) {
+            $user = $item->user;
+            $namaLengkap = $user->gelar ? $user->nama . ' ' . $user->gelar : $user->nama;
+
+            // Tambahkan lokasi masuk jika tersedia
+            if ($item->lokasi_masuk) {
+                $lokasi = explode(',', $item->lokasi_masuk);
+                if (count($lokasi) == 2) {
+                    $lat = floatval(trim($lokasi[0]));
+                    $lng = floatval(trim($lokasi[1]));
+
+                    // Validasi bahwa koordinat valid (bukan NaN atau infinity)
+                    if (!is_nan($lat) && !is_nan($lng) && is_finite($lat) && is_finite($lng)) {
+                        $lokasiGuru[] = [
+                            'lat' => $lat,
+                            'lng' => $lng,
+                            'name' => $namaLengkap,
+                            'status' => $item->status,
+                            'time' => $item->jam_masuk ? \Carbon\Carbon::parse($item->jam_masuk)->format('H:i') : '-',
+                            'location_type' => 'masuk',
+                            'jabatan' => $user->jabatan ?? '-'
+                        ];
+                    }
+                }
+            }
+
+            // Tambahkan lokasi pulang jika tersedia dan berbeda dari lokasi masuk
+            if ($item->lokasi_pulang && $item->lokasi_pulang !== $item->lokasi_masuk) {
+                $lokasi = explode(',', $item->lokasi_pulang);
+                if (count($lokasi) == 2) {
+                    $lat = floatval(trim($lokasi[0]));
+                    $lng = floatval(trim($lokasi[1]));
+
+                    // Validasi bahwa koordinat valid (bukan NaN atau infinity)
+                    if (!is_nan($lat) && !is_nan($lng) && is_finite($lat) && is_finite($lng)) {
+                        $lokasiGuru[] = [
+                            'lat' => $lat,
+                            'lng' => $lng,
+                            'name' => $namaLengkap,
+                            'status' => $item->status,
+                            'time' => $item->jam_pulang ? \Carbon\Carbon::parse($item->jam_pulang)->format('H:i') : '-',
+                            'location_type' => 'pulang',
+                            'jabatan' => $user->jabatan ?? '-'
+                        ];
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'lokasi_guru' => $lokasiGuru,
+            'tanggal' => $tanggal,
+            'jumlah_total' => count($lokasiGuru)
+        ]);
+    }
 }

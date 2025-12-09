@@ -491,48 +491,92 @@
 @endsection
 
 @section('scripts')
+    <!-- Load Leaflet JS first -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
         // Initialize Materialize dropdowns and other UI components
         document.addEventListener('DOMContentLoaded', function() {
-            var elems = document.querySelectorAll('.dropdown-trigger');
-            var instances = M.Dropdown.init(elems, {
-                coverTrigger: false
-            });
-            
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
+            // Initialize Materialize components safely
+            try {
+                var elems = document.querySelectorAll('.dropdown-trigger');
+                var instances = M.Dropdown.init(elems, {
+                    coverTrigger: false
+                });
+            } catch (error) {
+                console.error('Error initializing Materialize components:', error);
             }
-            
+
+            // Update live clock safely
+            function updateClock() {
+                try {
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString();
+                    const clockElement = document.getElementById('live-clock');
+                    if (clockElement) {
+                        clockElement.textContent = timeString;
+                    }
+                } catch (error) {
+                    console.error('Error updating clock:', error);
+                }
+            }
+
             // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
-            
-            // Map controls functionality
-            document.getElementById('zoomInBtn').addEventListener('click', function() {
-                const mapElement = document.getElementById('map');
-                if (window.map) {
-                    window.map.zoomIn();
+            try {
+                updateClock();
+                setInterval(updateClock, 1000);
+            } catch (error) {
+                console.error('Error setting up clock interval:', error);
+            }
+
+            // Map controls functionality - add event listeners safely
+            try {
+                const zoomInBtn = document.getElementById('zoomInBtn');
+                if (zoomInBtn) {
+                    zoomInBtn.addEventListener('click', function() {
+                        if (window.map) {
+                            window.map.zoomIn();
+                        }
+                    });
                 }
-            });
-            
-            document.getElementById('zoomOutBtn').addEventListener('click', function() {
-                const mapElement = document.getElementById('map');
-                if (window.map) {
-                    window.map.zoomOut();
+            } catch (error) {
+                console.error('Error setting up zoom in button:', error);
+            }
+
+            try {
+                const zoomOutBtn = document.getElementById('zoomOutBtn');
+                if (zoomOutBtn) {
+                    zoomOutBtn.addEventListener('click', function() {
+                        if (window.map) {
+                            window.map.zoomOut();
+                        }
+                    });
                 }
-            });
-            
-            document.getElementById('refreshBtn').addEventListener('click', function() {
-                // Reload the map with current data
-                if (window.map) {
-                    window.map.setView([-6.470063, 106.703517], 16);
+            } catch (error) {
+                console.error('Error setting up zoom out button:', error);
+            }
+
+            try {
+                const refreshBtn = document.getElementById('refreshBtn');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', function() {
+                        // Reload the map with current data
+                        if (window.map) {
+                            window.map.setView([-6.470063, 106.703517], 16);
+                        }
+                    });
                 }
-            });
-            
+            } catch (error) {
+                console.error('Error setting up refresh button:', error);
+            }
+
+            // Initialize Leaflet map only if map element exists
+            const mapElement = document.getElementById('map');
+            if (!mapElement) {
+                console.error('Map element not found');
+                return;
+            }
+
             // Initialize Leaflet map
             const map = L.map('map').setView([-6.470063, 106.703517], 16);
 
@@ -548,12 +592,12 @@
                 iconSize: [24, 24],
                 iconAnchor: [12, 12]
             });
-            
+
             const schoolMarker = L.marker([-6.470063, 106.703517], {icon: schoolIcon})
                 .addTo(map)
                 .bindPopup('<b>PLUS Pelita Insani</b><br>Jl. Raya Pelita, Tangerang Selatan')
                 .openPopup();
-            
+
             // Add a circle to highlight school area (radius 100 meters)
             const schoolCircle = L.circle([-6.470063, 106.703517], {
                 color: '#1976D2',
@@ -562,64 +606,163 @@
                 radius: 100
             }).addTo(map).bindPopup('Area Sekolah (Radius 100m)');
 
-            // Sample locations for teachers around the school
-            const locations = [
-                { lat: -6.469000, lng: 106.702500, name: 'Budi Santoso', status: 'hadir', time: '07:30:25', location: 'Gerbang Utama' },
-                { lat: -6.471500, lng: 106.704000, name: 'Siti Lestari', status: 'terlambat', time: '08:15:10', location: 'Ruang Guru' },
-                { lat: -6.468500, lng: 106.704500, name: 'Agus Kurniawan', status: 'izin', time: '07:00:00', location: 'Ruang 2B' },
-                { lat: -6.470500, lng: 106.702000, name: 'Dewi Anggraini', status: 'alpha', time: '-', location: '-' },
-                { lat: -6.469500, lng: 106.705000, name: 'Rahmat Hidayat', status: 'hadir', time: '07:25:40', location: 'Perpustakaan' },
-                { lat: -6.471000, lng: 106.703000, name: 'Ani Lestari', status: 'hadir', time: '07:20:15', location: 'Laboratorium' },
-                { lat: -6.468000, lng: 106.703500, name: 'Ahmad Fauzi', status: 'terlambat', time: '08:05:30', location: 'Aula' }
-            ];
-
-            // Add markers to the map for each teacher
-            locations.forEach(location => {
-                // Create custom marker icon based on status
-                let iconColor, popupClass;
-                
-                if (location.status === 'hadir') {
-                    iconColor = '#4CAF50';
-                    popupClass = 'status-hadir';
-                } else if (location.status === 'terlambat') {
-                    iconColor = '#FFC107';
-                    popupClass = 'status-terlambat';
-                } else if (location.status === 'izin') {
-                    iconColor = '#2196F3';
-                    popupClass = 'status-izin';
-                } else {
-                    iconColor = '#F44336';
-                    popupClass = 'status-alpha';
-                }
-
-                const markerIcon = L.divIcon({
-                    className: 'custom-marker-icon',
-                    html: `<div style="background-color: ${iconColor}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 2px solid white;">${location.name.charAt(0)}</div>`,
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
+            // Function to load location data from API
+            function loadLocationData(tanggal) {
+                // Clear existing markers except the school marker
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker && layer !== schoolMarker) {
+                        map.removeLayer(layer);
+                    }
                 });
 
-                const marker = L.marker([location.lat, location.lng], {icon: markerIcon})
-                    .addTo(map)
-                    .bindPopup(`
-                        <div style="min-width: 200px;">
-                            <div class="popup-header" style="font-weight: 600; margin-bottom: 5px; color: #212121;">${location.name}</div>
-                            <div class="popup-content">
-                                Status: <span class="popup-status ${popupClass}" style="display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; margin-top: 5px;">${location.status.charAt(0).toUpperCase() + location.status.slice(1)}</span><br>
-                                Waktu: ${location.time}<br>
-                                Lokasi: ${location.location}
-                            </div>
-                        </div>
-                    `);
-            });
+                // Show loading indicator
+                const loadingMarker = L.marker([-6.470063, 106.703517]).addTo(map)
+                    .bindPopup('Memuat data lokasi...')
+                    .openPopup();
 
-            // Store map instance in global variable for later use
+                // Fetch location data from API
+                // Get CSRF token safely
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                const tokenValue = csrfToken ? csrfToken.getAttribute('content') : null;
+
+                fetch(`/admin/api/lokasi-kehadiran?tanggal=${tanggal}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': tokenValue
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Remove loading indicator
+                    map.removeLayer(loadingMarker);
+
+                    if (!data.lokasi_guru || data.lokasi_guru.length === 0) {
+                        // Show message if no location data found
+                        L.marker([-6.470063, 106.703517]).addTo(map)
+                            .bindPopup('Tidak ada data lokasi untuk tanggal ini.')
+                            .openPopup();
+                        return;
+                    }
+
+                    // Add markers to the map for each teacher
+                    data.lokasi_guru.forEach(location => {
+                        // Validasi koordinat sebelum menambahkan marker
+                        if (!location.lat || !location.lng ||
+                            typeof location.lat !== 'number' ||
+                            typeof location.lng !== 'number' ||
+                            isNaN(location.lat) || isNaN(location.lng)) {
+                            console.warn('Invalid coordinates found:', location);
+                            return; // Lewati lokasi ini jika koordinat tidak valid
+                        }
+
+                        // Create custom marker icon based on status
+                        let iconColor, popupClass;
+
+                        if (location.status === 'hadir') {
+                            iconColor = '#4CAF50';
+                            popupClass = 'status-hadir';
+                        } else if (location.status === 'terlambat') {
+                            iconColor = '#FFC107';
+                            popupClass = 'status-terlambat';
+                        } else if (location.status === 'izin') {
+                            iconColor = '#2196F3';
+                            popupClass = 'status-izin';
+                        } else if (location.status === 'sakit') {
+                            iconColor = '#9C27B0';
+                            popupClass = 'status-sakit';
+                        } else {
+                            iconColor = '#F44336';
+                            popupClass = 'status-alpha';
+                        }
+
+                        const markerIcon = L.divIcon({
+                            className: 'custom-marker-icon',
+                            html: `<div style="background-color: ${iconColor}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 2px solid white;">${location.name.charAt(0)}</div>`,
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        });
+
+                        const marker = L.marker([location.lat, location.lng], {icon: markerIcon})
+                            .addTo(map)
+                            .bindPopup(`
+                                <div style="min-width: 200px;">
+                                    <div class="popup-header" style="font-weight: 600; margin-bottom: 5px; color: #212121;">${location.name}</div>
+                                    <div class="popup-content">
+                                        <div>Status: <span class="popup-status ${popupClass}" style="display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; margin-top: 5px;">${location.status.charAt(0).toUpperCase() + location.status.slice(1)}</span></div>
+                                        <div>Waktu: ${location.time}</div>
+                                        <div>Tipe Lokasi: ${location.location_type === 'masuk' ? 'Lokasi Absen Masuk' : 'Lokasi Absen Pulang'}</div>
+                                        ${location.jabatan !== '-' ? `<div>Jabatan: ${location.jabatan}</div>` : ''}
+                                    </div>
+                                </div>
+                            `);
+                    });
+
+                    // Jika tidak ada lokasi valid yang ditambahkan, tampilkan pesan
+                    const totalValidLocations = data.lokasi_guru.filter(loc =>
+                        loc.lat && loc.lng &&
+                        typeof loc.lat === 'number' &&
+                        typeof loc.lng === 'number' &&
+                        !isNaN(loc.lat) && !isNaN(loc.lng)
+                    ).length;
+
+                    if (totalValidLocations === 0 && data.lokasi_guru.length > 0) {
+                        L.marker([-6.470063, 106.703517]).addTo(map)
+                            .bindPopup('Tidak ada lokasi valid untuk tanggal ini.')
+                            .openPopup();
+                    }
+                })
+                .catch(error => {
+                    // Remove loading indicator
+                    if (map && loadingMarker) {
+                        map.removeLayer(loadingMarker);
+                    }
+
+                    console.error('Error loading location data:', error);
+                    // Show error message on map
+                    if (map) {
+                        L.marker([-6.470063, 106.703517]).addTo(map)
+                            .bindPopup('Gagal memuat data lokasi. Silakan coba lagi.')
+                            .openPopup();
+                    }
+                });
+            }
+
+            // Define default date from PHP to be used in JavaScript
+            const defaultTanggal = '{!! addslashes($tanggal ?? date('Y-m-d')) !!}';
+
+            // Load location data for the selected date and setup form handler (only if map was initialized)
+            try {
+                loadLocationData(defaultTanggal);
+
+                // Add event listener for the filter form to reload map data
+                document.querySelector('form[method="GET"]').addEventListener('submit', function(e) {
+                    e.preventDefault(); // Prevent default form submission
+
+                    // Get the selected date from the form
+                    const tanggal = document.getElementById('tanggal').value;
+
+                    // Reload the map with the selected date
+                    if (window.map) {
+                        loadLocationData(tanggal);
+                    }
+                });
+            } catch (error) {
+                console.error('Error during map data loading or form setup:', error);
+            }
+
+            // Assign map instance to window object for access from other functions
             window.map = map;
-        });
-    </script>
-    
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        } catch (error) {
+            console.error('Error during map initialization:', error);
+        }
+    }); // End of DOMContentLoaded event listener
 
     <!-- Script untuk polling update data kehadiran -->
     <script>
@@ -628,16 +771,20 @@
             const pollingIntervalMs = 30000; // 30 detik
 
             function updateKehadiranData() {
-                // Ambil tanggal dari input form
-                const tanggal = document.getElementById('tanggal')?.value || '{{ $tanggal ?? date("Y-m-d") }}';
+                // Ambil tanggal dari input form, atau gunakan default
+                const tanggal = document.getElementById('tanggal')?.value || '{!! addslashes($tanggal ?? date('Y-m-d')) !!}';
                 const url = '/admin/api/kehadiran-harian?tanggal=' + encodeURIComponent(tanggal);
+
+                // Get CSRF token safely
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                const tokenValue = csrfToken ? csrfToken.getAttribute('content') : null;
 
                 fetch(url, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': tokenValue
                     },
                 })
                 .then(response => {

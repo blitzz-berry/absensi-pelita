@@ -61,6 +61,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Route untuk API kehadiran harian (hanya admin dengan email diizinkan)
     Route::get('/admin/api/kehadiran-harian', [GuruController::class, 'getKehadiranHarian'])->middleware(['auth', 'role:admin', 'admin.email'])->name('admin.api.kehadiran.harian');
+
+    // Route untuk API lokasi kehadiran (hanya admin dengan email diizinkan)
+    Route::get('/admin/api/lokasi-kehadiran', [GuruController::class, 'getLokasiKehadiran'])->middleware(['auth', 'role:admin', 'admin.email'])->name('admin.api.lokasi.kehadiran');
     
     // Route untuk pengajuan izin (hanya admin dengan email diizinkan)
     Route::middleware(['auth', 'role:admin', 'admin.email'])->group(function () {

@@ -919,13 +919,25 @@
                 const blob = new Blob([ab], { type: mimeString });
                 const file = new File([blob], `selfie_${currentAction}_${Date.now()}.png`, { type: mimeString });
                 
+                // Pastikan lokasi valid sebelum submit
+                if (!userLat || !userLng || typeof userLat !== 'number' || typeof userLng !== 'number') {
+                    document.getElementById('statusMessage').innerHTML =
+                        '<span style="color: #F44336;">Lokasi tidak valid. Harap tunggu hingga lokasi ditemukan.</span>';
+
+                    // Kembalikan tombol ke keadaan semula
+                    const submitBtn = document.getElementById('submitBtn');
+                    submitBtn.innerHTML = 'Submit Absensi';
+                    submitBtn.disabled = false;
+                    return;
+                }
+
                 const formData = new FormData();
                 formData.append('foto', file);
                 formData.append('lokasi', `${userLat},${userLng}`);
-                
+
                 // Tentukan URL berdasarkan action
                 const url = currentAction === 'masuk' ? '{{ route("guru.absen.masuk") }}' : '{{ route("guru.absen.pulang") }}';
-                
+
                 fetch(url, {
                     method: 'POST',
                     body: formData,

@@ -185,9 +185,19 @@ class GuruAbsensiController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $user = Auth::user();
-            
+
+            // Log input untuk debugging
+            \Log::info('Absen Pulang Request Data:', [
+                'user_id' => $user->id,
+                'lokasi' => $request->lokasi,
+                'lokasi_type' => gettype($request->lokasi),
+                'lokasi_is_empty' => empty($request->lokasi),
+                'foto_present' => $request->hasFile('foto'),
+                'all_inputs' => $request->all()
+            ]);
+
             // Validasi input
             $request->validate([
                 'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
