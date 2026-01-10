@@ -599,12 +599,13 @@
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th style="width: 20%;">Guru</th>
-                                <th style="width: 15%;">Tanggal</th>
-                                <th style="width: 10%;">Jenis</th>
-                                <th style="width: 20%;">Periode</th>
-                                <th style="width: 20%;">Alasan</th>
-                                <th style="width: 10%;">Status</th>
+                                <th style="width: 18%;">Guru</th>
+                                <th style="width: 13%;">Tanggal</th>
+                                <th style="width: 8%;">Jenis</th>
+                                <th style="width: 18%;">Periode</th>
+                                <th style="width: 15%;">Alasan</th>
+                                <th style="width: 8%;">Status</th>
+                                <th style="width: 15%;">Disetujui Oleh</th>
                                 <th style="width: 5%;">Aksi</th>
                             </tr>
                         </thead>
@@ -625,24 +626,36 @@
                                     </td>
                                     <td>{{ \Carbon\Carbon::parse($izin->tanggal_mulai)->format('d M') }} - {{ \Carbon\Carbon::parse($izin->tanggal_selesai)->format('d M Y') }}</td>
                                     <td>
-                                        <div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $izin->alasan }}">
+                                        <div style="max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $izin->alasan }}">
                                             {{ $izin->alasan }}
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="status-badge 
-                                            @if($izin->status === 'diajukan') status-diajukan 
-                                            @elseif($izin->status === 'disetujui') status-disetujui 
+                                        <span class="status-badge
+                                            @if($izin->status === 'diajukan') status-diajukan
+                                            @elseif($izin->status === 'disetujui') status-disetujui
                                             @else status-ditolak @endif">
                                             {{ ucfirst($izin->status) }}
                                         </span>
+                                    </td>
+                                    <td>
+                                        @if($izin->status !== 'diajukan' && $izin->approvedBy)
+                                            <div style="font-size: 12px;">
+                                                <div>{{ $izin->approvedBy->nama ?? 'N/A' }}</div>
+                                                @if($izin->approved_at)
+                                                    <div style="color: #757575;">{{ \Carbon\Carbon::parse($izin->approved_at)->format('d M Y H:i') }}</div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span style="color: #9e9e9e; font-style: italic;">-</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="action-buttons">
                                             <button class="action-button btn-detail" data-id="{{ $izin->id }}" title="Lihat detail">
                                                 <i class="material-icons" style="font-size: 18px;">remove_red_eye</i>
                                             </button>
-                                            
+
                                             @if($izin->status === 'diajukan')
                                                 <button class="action-button btn-setujui" data-id="{{ $izin->id }}" title="Setujui">
                                                     <i class="material-icons" style="font-size: 18px; color: #4CAF50;">check_circle</i>
@@ -656,7 +669,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" style="text-align: center; padding: 60px;">
+                                    <td colspan="8" style="text-align: center; padding: 60px;">
                                         <i class="material-icons" style="font-size: 48px; color: #bdbdbd; margin-bottom: 15px;">event_note</i>
                                         <p style="margin: 0; color: #9e9e9e; font-size: 16px;">Tidak ada pengajuan izin</p>
                                         <p style="margin: 5px 0 0 0; color: #bdbdbd; font-size: 14px;">Belum ada guru yang mengajukan izin/sakit</p>
@@ -866,7 +879,29 @@
                                     </div>
                                 </div>
                                 ` : ''}
-                                
+
+                                ${(data.izin.status === 'disetujui' || data.izin.status === 'ditolak') && data.izin.approved_by ? `
+                                <div style="margin-bottom: 20px;">
+                                    <h5 style="margin: 0 0 10px 0; color: #1976D2;">Informasi Persetujuan</h5>
+                                    <div style="background: #f1f8e9; padding: 15px; border-radius: 8px;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <span>Disetujui/Ditolak oleh:</span>
+                                            <span style="font-weight: 500;">${data.izin.approved_by}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <span>Tanggal:</span>
+                                            <span style="font-weight: 500;">${data.izin.approved_at_formatted}</span>
+                                        </div>
+                                        ${data.izin.admin_notes ? `
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>Catatan:</span>
+                                            <span style="font-weight: 500;">${data.izin.admin_notes}</span>
+                                        </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                ` : ''}
+
                                 ${data.izin.bukti_file ? `
                                 <div style="margin-bottom: 20px;">
                                     <h5 style="margin: 0 0 10px 0; color: #1976D2;">Bukti Pendukung</h5>

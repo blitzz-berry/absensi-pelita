@@ -428,11 +428,11 @@
                             <label for="status">Status Kehadiran</label>
                             <select name="status" id="status" class="filter-control">
                                 <option value="">Semua Status</option>
-                                <option value="hadir">Hadir</option>
-                                <option value="terlambat">Terlambat</option>
-                                <option value="izin">Izin</option>
-                                <option value="sakit">Sakit</option>
-                                <option value="alpha">Alpha</option>
+                                <option value="hadir" {{ request('status') === 'hadir' ? 'selected' : '' }}>Hadir</option>
+                                <option value="terlambat" {{ request('status') === 'terlambat' ? 'selected' : '' }}>Terlambat</option>
+                                <option value="izin" {{ request('status') === 'izin' ? 'selected' : '' }}>Izin</option>
+                                <option value="sakit" {{ request('status') === 'sakit' ? 'selected' : '' }}>Sakit</option>
+                                <option value="alpha" {{ request('status') === 'alpha' ? 'selected' : '' }}>Alpha</option>
                             </select>
                         </div>
                         
@@ -494,9 +494,31 @@
     <!-- Load Leaflet JS first -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <!-- Handle potential Midtrans script error -->
+    <script>
+        // Prevent Midtrans-related errors from breaking the page
+        if (typeof window.snap !== 'undefined' || document.querySelector('script[src*="snap"]')) {
+            // Try to initialize Midtrans safely
+            try {
+                // Check if Midtrans script tag has walletChannelId
+                const midtransScript = document.querySelector('script[src*="snap"]');
+                if (midtransScript) {
+                    // Check for walletChannelId in script attributes
+                    const walletChannelId = midtransScript.getAttribute('data-channel-id');
+                    if (!walletChannelId) {
+                        console.warn('Midtrans script found without walletChannelId, skipping initialization');
+                    }
+                }
+            } catch (error) {
+                console.warn('Midtrans initialization error:', error.message);
+            }
+        }
+    </script>
+
     <script>
         // Initialize Materialize dropdowns and other UI components
         document.addEventListener('DOMContentLoaded', function() {
+            try {
             // Initialize Materialize components safely
             try {
                 var elems = document.querySelectorAll('.dropdown-trigger');
@@ -507,27 +529,6 @@
                 console.error('Error initializing Materialize components:', error);
             }
 
-            // Update live clock safely
-            function updateClock() {
-                try {
-                    const now = new Date();
-                    const timeString = now.toLocaleTimeString();
-                    const clockElement = document.getElementById('live-clock');
-                    if (clockElement) {
-                        clockElement.textContent = timeString;
-                    }
-                } catch (error) {
-                    console.error('Error updating clock:', error);
-                }
-            }
-
-            // Update clock immediately and then every second
-            try {
-                updateClock();
-                setInterval(updateClock, 1000);
-            } catch (error) {
-                console.error('Error setting up clock interval:', error);
-            }
 
             // Map controls functionality - add event listeners safely
             try {
@@ -560,9 +561,10 @@
                 const refreshBtn = document.getElementById('refreshBtn');
                 if (refreshBtn) {
                     refreshBtn.addEventListener('click', function() {
-                        // Reload the map with current data
+                        const tanggal = document.getElementById('tanggal')?.value;
+                        const status = document.getElementById('status')?.value || '';
                         if (window.map) {
-                            window.map.setView([-6.470063, 106.703517], 16);
+                            loadLocationData(tanggal || {!! json_encode($tanggal ?? date('Y-m-d')) !!}, status);
                         }
                     });
                 }
@@ -577,8 +579,10 @@
                 return;
             }
 
+            const schoolLatLng = [-6.470063, 106.703517];
+
             // Initialize Leaflet map
-            const map = L.map('map').setView([-6.470063, 106.703517], 16);
+            const map = L.map('map').setView(schoolLatLng, 16);
 
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -593,30 +597,27 @@
                 iconAnchor: [12, 12]
             });
 
-            const schoolMarker = L.marker([-6.470063, 106.703517], {icon: schoolIcon})
+            const schoolMarker = L.marker(schoolLatLng, {icon: schoolIcon})
                 .addTo(map)
                 .bindPopup('<b>PLUS Pelita Insani</b><br>Jl. Raya Pelita, Tangerang Selatan')
                 .openPopup();
 
             // Add a circle to highlight school area (radius 100 meters)
-            const schoolCircle = L.circle([-6.470063, 106.703517], {
+            const schoolCircle = L.circle(schoolLatLng, {
                 color: '#1976D2',
                 fillColor: '#e3f2fd',
                 fillOpacity: 0.2,
                 radius: 100
             }).addTo(map).bindPopup('Area Sekolah (Radius 100m)');
 
+            const markersLayer = L.layerGroup().addTo(map);
+
             // Function to load location data from API
-            function loadLocationData(tanggal) {
-                // Clear existing markers except the school marker
-                map.eachLayer(function(layer) {
-                    if (layer instanceof L.Marker && layer !== schoolMarker) {
-                        map.removeLayer(layer);
-                    }
-                });
+            function loadLocationData(tanggal, status) {
+                markersLayer.clearLayers();
 
                 // Show loading indicator
-                const loadingMarker = L.marker([-6.470063, 106.703517]).addTo(map)
+                const loadingMarker = L.marker(schoolLatLng).addTo(markersLayer)
                     .bindPopup('Memuat data lokasi...')
                     .openPopup();
 
@@ -625,7 +626,8 @@
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
                 const tokenValue = csrfToken ? csrfToken.getAttribute('content') : null;
 
-                fetch(`/admin/api/lokasi-kehadiran?tanggal=${tanggal}`, {
+                const statusParam = status ? `&status=${encodeURIComponent(status)}` : '';
+                fetch(`/admin/api/lokasi-kehadiran?tanggal=${encodeURIComponent(tanggal)}${statusParam}`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -641,11 +643,11 @@
                 })
                 .then(data => {
                     // Remove loading indicator
-                    map.removeLayer(loadingMarker);
+                    markersLayer.removeLayer(loadingMarker);
 
                     if (!data.lokasi_guru || data.lokasi_guru.length === 0) {
                         // Show message if no location data found
-                        L.marker([-6.470063, 106.703517]).addTo(map)
+                        L.marker(schoolLatLng).addTo(markersLayer)
                             .bindPopup('Tidak ada data lokasi untuk tanggal ini.')
                             .openPopup();
                         return;
@@ -684,24 +686,32 @@
 
                         const markerIcon = L.divIcon({
                             className: 'custom-marker-icon',
-                            html: `<div style="background-color: ${iconColor}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 2px solid white;">${location.name.charAt(0)}</div>`,
+                            html: '<div style="background-color: ' + (iconColor || '') + '; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 2px solid white;">' + ((location.name && location.name.charAt(0)) || 'U') + '</div>',
                             iconSize: [24, 24],
                             iconAnchor: [12, 12]
                         });
 
-                        const marker = L.marker([location.lat, location.lng], {icon: markerIcon})
-                            .addTo(map)
-                            .bindPopup(`
-                                <div style="min-width: 200px;">
-                                    <div class="popup-header" style="font-weight: 600; margin-bottom: 5px; color: #212121;">${location.name}</div>
-                                    <div class="popup-content">
-                                        <div>Status: <span class="popup-status ${popupClass}" style="display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; margin-top: 5px;">${location.status.charAt(0).toUpperCase() + location.status.slice(1)}</span></div>
-                                        <div>Waktu: ${location.time}</div>
-                                        <div>Tipe Lokasi: ${location.location_type === 'masuk' ? 'Lokasi Absen Masuk' : 'Lokasi Absen Pulang'}</div>
-                                        ${location.jabatan !== '-' ? `<div>Jabatan: ${location.jabatan}</div>` : ''}
-                                    </div>
-                                </div>
-                            `);
+                        // Siapkan data popup dengan aman
+                        const name = (location.name || '').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const statusText = (((location.status || '').charAt(0) || '').toUpperCase() + ((location.status || '').slice(1) || ''));
+                        const time = (location.time === '-' || !location.time) ? '-' : (location.time || '') + ' WIB';
+                        const locationType = (location.location_type === 'masuk') ? 'Lokasi Absen Masuk' : 'Lokasi Absen Pulang';
+                        const jabatan = (location.jabatan && location.jabatan !== '-') ? '<div>Jabatan: ' + (location.jabatan || '').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' : '';
+
+                        const popupContent =
+                            '<div style="min-width: 200px;">' +
+                            '<div class="popup-header" style="font-weight: 600; margin-bottom: 5px; color: #212121;">' + name + '</div>' +
+                            '<div class="popup-content">' +
+                            '<div>Status: <span class="popup-status ' + (popupClass || '') + '" style="display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; margin-top: 5px;">' + statusText + '</span></div>' +
+                            '<div>Waktu: ' + time + '</div>' +
+                            '<div>Tipe Lokasi: ' + locationType + '</div>' +
+                            jabatan +
+                            '</div>' +
+                            '</div>';
+
+                        L.marker([location.lat, location.lng], {icon: markerIcon})
+                            .addTo(markersLayer)
+                            .bindPopup(popupContent);
                     });
 
                     // Jika tidak ada lokasi valid yang ditambahkan, tampilkan pesan
@@ -713,21 +723,37 @@
                     ).length;
 
                     if (totalValidLocations === 0 && data.lokasi_guru.length > 0) {
-                        L.marker([-6.470063, 106.703517]).addTo(map)
+                        L.marker(schoolLatLng).addTo(markersLayer)
                             .bindPopup('Tidak ada lokasi valid untuk tanggal ini.')
                             .openPopup();
+                        map.setView(schoolLatLng, 16);
+                        return;
+                    }
+
+                    // Fokus peta agar semua titik terlihat
+                    const bounds = [schoolMarker.getLatLng()];
+                    markersLayer.eachLayer(function(layer) {
+                        if (layer.getLatLng) {
+                            bounds.push(layer.getLatLng());
+                        }
+                    });
+
+                    if (bounds.length > 1) {
+                        map.fitBounds(L.latLngBounds(bounds), { padding: [40, 40] });
+                    } else {
+                        map.setView(schoolLatLng, 16);
                     }
                 })
                 .catch(error => {
                     // Remove loading indicator
                     if (map && loadingMarker) {
-                        map.removeLayer(loadingMarker);
+                        markersLayer.removeLayer(loadingMarker);
                     }
 
                     console.error('Error loading location data:', error);
                     // Show error message on map
                     if (map) {
-                        L.marker([-6.470063, 106.703517]).addTo(map)
+                        L.marker(schoolLatLng).addTo(markersLayer)
                             .bindPopup('Gagal memuat data lokasi. Silakan coba lagi.')
                             .openPopup();
                     }
@@ -735,11 +761,12 @@
             }
 
             // Define default date from PHP to be used in JavaScript
-            const defaultTanggal = '{!! addslashes($tanggal ?? date('Y-m-d')) !!}';
+            const defaultTanggal = {!! json_encode($tanggal ?? date('Y-m-d')) !!};
 
             // Load location data for the selected date and setup form handler (only if map was initialized)
             try {
-                loadLocationData(defaultTanggal);
+                const selectedStatus = document.getElementById('status')?.value || '';
+                loadLocationData(defaultTanggal, selectedStatus);
 
                 // Add event listener for the filter form to reload map data
                 document.querySelector('form[method="GET"]').addEventListener('submit', function(e) {
@@ -747,10 +774,11 @@
 
                     // Get the selected date from the form
                     const tanggal = document.getElementById('tanggal').value;
+                    const status = document.getElementById('status')?.value || '';
 
                     // Reload the map with the selected date
                     if (window.map) {
-                        loadLocationData(tanggal);
+                        loadLocationData(tanggal, status);
                     }
                 });
             } catch (error) {
@@ -763,6 +791,7 @@
             console.error('Error during map initialization:', error);
         }
     }); // End of DOMContentLoaded event listener
+    </script>
 
     <!-- Script untuk polling update data kehadiran -->
     <script>
@@ -772,7 +801,7 @@
 
             function updateKehadiranData() {
                 // Ambil tanggal dari input form, atau gunakan default
-                const tanggal = document.getElementById('tanggal')?.value || '{!! addslashes($tanggal ?? date('Y-m-d')) !!}';
+                const tanggal = document.getElementById('tanggal')?.value || {!! json_encode($tanggal ?? date('Y-m-d')) !!};
                 const url = '/admin/api/kehadiran-harian?tanggal=' + encodeURIComponent(tanggal);
 
                 // Get CSRF token safely

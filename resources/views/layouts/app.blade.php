@@ -229,11 +229,43 @@
 
     @yield('scripts')
     <script>
+        // Update live clock safely for all pages
+        function updateClock() {
+            try {
+                const now = new Date();
+                // Format waktu sesuai dengan format yang digunakan di menu lain (24 jam, WIB)
+                const timeString = now.toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false,
+                    timeZone: 'Asia/Jakarta'
+                });
+                const clockElement = document.getElementById('live-clock');
+                if (clockElement) {
+                    clockElement.textContent = timeString;
+                }
+            } catch (error) {
+                console.error('Error updating clock:', error);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             var elems = document.querySelectorAll('.dropdown-trigger');
             var instances = M.Dropdown.init(elems, {
                 coverTrigger: false
             });
+
+            // Initialize clock if element exists
+            const clockElement = document.getElementById('live-clock');
+            if (clockElement) {
+                updateClock();
+                // Clear any existing intervals that might be running for live-clock
+                if (window.liveClockIntervalId) {
+                    clearInterval(window.liveClockIntervalId);
+                }
+                window.liveClockIntervalId = setInterval(updateClock, 1000);
+            }
 
             // Hamburger menu functionality
             const hamburger = document.querySelector('.hamburger');
@@ -264,6 +296,14 @@
                     });
                 });
             }
+
+            // Cleanup interval when leaving page to prevent multiple intervals running
+            window.addEventListener('beforeunload', function() {
+                if (window.liveClockIntervalId) {
+                    clearInterval(window.liveClockIntervalId);
+                    window.liveClockIntervalId = null;
+                }
+            });
         });
     </script>
 </body>

@@ -168,6 +168,32 @@
             font-weight: 600;
             color: #4CAF50;
         }
+
+        .accuracy-tip {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            background: #fff3e0;
+            color: #e65100;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 @endsection
 
@@ -198,6 +224,7 @@
                     </div>
 
                     <div id="accuracy-display" style="text-align: center; margin-bottom: 15px;"></div>
+                    <div id="accuracy-tip" class="accuracy-tip" style="display: none;"></div>
                     
                     <button class="current-location-btn" id="getLocationBtn">
                         <i class="material-icons left">my_location</i> Mulai Pelacakan Akurat
@@ -225,10 +252,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var elems = document.querySelectorAll('.dropdown-trigger');
-            var instances = M.Dropdown.init(elems, {
-                coverTrigger: false
-            });
+            try {
+                var elems = document.querySelectorAll('.dropdown-trigger');
+                var instances = M.Dropdown.init(elems, {
+                    coverTrigger: false
+                });
+            } catch (e) {
+                console.warn('Materialize init skipped:', e);
+            }
 
             // Update live clock
             function updateClock() {
@@ -245,9 +276,16 @@
             let marker = null;
             let circle = null;
             let watchId = null;
+            let highAccuracyTimerId = null;
             let bestAccuracy = Infinity;
             const TARGET_ACCURACY = 20; // Target akurasi dalam meter
             const LOCATION_TIMEOUT = 5 * 60 * 1000; // 5 menit dalam milidetik
+            const HIGH_ACCURACY_MAX_WAIT = 25000; // Batas tunggu untuk akurasi tinggi
+            const QUICK_TIMEOUT = 6000;
+            const QUICK_MAX_AGE = 120000;
+            const hasLeaflet = typeof L !== 'undefined';
+            const ACCURACY_TIP_DELAY = 12000;
+            let accuracyTipTimerId = null;
 
             // Fungsi baca lokasi dari localStorage
             function getLastLocation() {
@@ -327,6 +365,9 @@
 
             // Inisialisasi Peta
             function initMap() {
+                if (!hasLeaflet) {
+                    return;
+                }
                 // Default coordinate (Indonesia)
                 map = L.map('location-map').setView([-6.2088, 106.8456], 13);
 
@@ -338,9 +379,18 @@
 
             // Panggil initMap saat halaman load, tapi sembunyikan marker dulu
             initMap();
+            if (!hasLeaflet) {
+                const mapContainer = document.getElementById('location-map');
+                if (mapContainer) {
+                    mapContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #757575;">Peta tidak dapat dimuat. Cek koneksi internet untuk Leaflet.</div>';
+                }
+            }
 
             // Fungsi update UI Peta
             function updateMap(lat, lng, accuracy) {
+                if (!map) {
+                    return;
+                }
                 const latLng = [lat, lng];
 
                 if (!marker) {
@@ -364,6 +414,56 @@
                 map.setView(latLng, 18); // Zoom in dekat
             }
 
+            function updateLocationUI(lat, lng, accuracy, label) {
+                const displayEl = document.getElementById('location-display');
+                const statusEl = document.getElementById('location-status');
+                const accuracyEl = document.getElementById('accuracy-display');
+                const locationBtn = document.getElementById('getLocationBtn');
+                const tipEl = document.getElementById('accuracy-tip');
+
+                displayEl.textContent = `Lokasi: ${lat.toFixed(7)}, ${lng.toFixed(7)}`;
+
+                let accuracyHtml = `Akurasi: <strong>${Math.round(accuracy)} meter</strong>`;
+                let accuracyClass = '';
+
+                if (accuracy <= TARGET_ACCURACY) {
+                    accuracyHtml += ' <i class="material-icons tiny" style="vertical-align: middle;">check_circle</i> Akurat';
+                    accuracyClass = 'accuracy-good';
+                    statusEl.textContent = label || 'Terverifikasi (Akurat)';
+                    statusEl.style.color = '#4CAF50';
+                    locationBtn.innerHTML = '<i class="material-icons left">my_location</i> Lokasi Akurat Ditemukan';
+                    locationBtn.disabled = false;
+                    if (tipEl) {
+                        tipEl.style.display = 'none';
+                    }
+                } else {
+                    accuracyHtml += ' <i class="material-icons tiny" style="vertical-align: middle;">warning</i> Menunggu akurasi <= ' + TARGET_ACCURACY + 'm';
+                    accuracyClass = 'accuracy-bad';
+                    statusEl.textContent = label || 'Menunggu akurasi lebih baik...';
+                    statusEl.style.color = '#FF9800';
+                    locationBtn.innerHTML = '<i class="material-icons left">hourglass_top</i> Menunggu Akurasi';
+                    locationBtn.disabled = true;
+                }
+
+                accuracyEl.innerHTML = `<div class="accuracy-info ${accuracyClass}">${accuracyHtml}</div>`;
+                updateMap(lat, lng, accuracy);
+            }
+
+            function stopHighAccuracyWatch() {
+                if (watchId) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
+                if (highAccuracyTimerId) {
+                    clearTimeout(highAccuracyTimerId);
+                    highAccuracyTimerId = null;
+                }
+                if (accuracyTipTimerId) {
+                    clearTimeout(accuracyTipTimerId);
+                    accuracyTipTimerId = null;
+                }
+            }
+
             // Cek apakah ada lokasi valid sebelumnya saat halaman dibuka
             const lastLocation = getLastLocation();
             if (lastLocation) {
@@ -375,17 +475,97 @@
                 locationBtn.disabled = false;
             }
 
+            function setStatusMessage(message, color) {
+                const statusEl = document.getElementById('location-status');
+                statusEl.textContent = message;
+                statusEl.style.color = color;
+            }
+
+            function requestQuickPosition() {
+                if (!navigator.geolocation) {
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+
+                        if (accuracy < bestAccuracy) {
+                            bestAccuracy = accuracy;
+                            saveLocation(lat, lng, accuracy);
+                        }
+
+                        updateLocationUI(lat, lng, accuracy, 'Lokasi cepat didapat, memperbaiki akurasi...');
+                    },
+                    function() {
+                        // Abaikan error quick, lanjut high accuracy
+                    },
+                    {
+                        enableHighAccuracy: false,
+                        timeout: QUICK_TIMEOUT,
+                        maximumAge: QUICK_MAX_AGE
+                    }
+                );
+            }
+
+            function quickLocate() {
+                if (!navigator.geolocation) {
+                    return;
+                }
+
+                const options = {
+                    enableHighAccuracy: false,
+                    timeout: 5000,
+                    maximumAge: 60000
+                };
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+
+                        if (accuracy < bestAccuracy) {
+                            bestAccuracy = accuracy;
+                            saveLocation(lat, lng, accuracy);
+                        }
+
+                        updateLocationUI(lat, lng, accuracy, 'Lokasi cepat didapat, memperbaiki akurasi...');
+                    },
+                    function() {
+                        // Abaikan error cepat, akan ditangani oleh high accuracy
+                    },
+                    options
+                );
+            }
+
             // Fungsi untuk mendapatkan lokasi dengan watchPosition
             function startTracking() {
                 const locationBtn = document.getElementById('getLocationBtn');
                 const statusEl = document.getElementById('location-status');
                 const displayEl = document.getElementById('location-display');
                 const accuracyEl = document.getElementById('accuracy-display');
+                const tipEl = document.getElementById('accuracy-tip');
 
-                locationBtn.innerHTML = '<span class="loading"></span> Mencari Sinyal Terbaik...';
+                locationBtn.innerHTML = '<span class="loading"></span> Mencari lokasi...';
                 locationBtn.disabled = true;
-                statusEl.textContent = "Mencari Sinyal...";
+                statusEl.textContent = "Mencari lokasi...";
                 statusEl.style.color = "#FF9800"; // Orange
+                if (tipEl) {
+                    tipEl.style.display = 'none';
+                    tipEl.textContent = '';
+                }
+
+                if (!window.isSecureContext) {
+                    displayEl.textContent = "Geolocation hanya bisa diakses di HTTPS atau localhost.";
+                    statusEl.textContent = "Tidak aman";
+                    statusEl.style.color = "#F44336";
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = '<i class="material-icons left">refresh</i> Coba Lagi';
+                    return;
+                }
 
                 if (!navigator.geolocation) {
                     displayEl.textContent = "Geolocation tidak didukung browser ini.";
@@ -395,20 +575,48 @@
                 // Reset best accuracy
                 bestAccuracy = Infinity;
 
+                // Ambil lokasi cepat terlebih dahulu
+                requestQuickPosition();
+
                 const options = {
                     enableHighAccuracy: true, // Paksa gunakan GPS
                     timeout: 15000,           // Waktu tunggu agak lama
                     maximumAge: 0             // Jangan pakai cache!
                 };
 
+                // Tampilkan tips jika akurasi belum membaik setelah beberapa detik
+                accuracyTipTimerId = setTimeout(function() {
+                    if (tipEl) {
+                        tipEl.style.display = 'block';
+                        tipEl.textContent = 'Tips akurasi: aktifkan GPS mode High Accuracy, nyalakan Wi-Fi, dan coba di area terbuka. Di laptop/PC tanpa GPS, akurasi 20m sering tidak tercapai.';
+                    }
+                }, ACCURACY_TIP_DELAY);
+
+                // Stop tracking jika terlalu lama agar tidak menggantung
+                highAccuracyTimerId = setTimeout(function() {
+                    stopHighAccuracyWatch();
+                    if (bestAccuracy <= TARGET_ACCURACY) {
+                        statusEl.textContent = 'Terverifikasi (Akurat)';
+                        statusEl.style.color = '#4CAF50';
+                        locationBtn.innerHTML = '<i class="material-icons left">my_location</i> Lokasi Akurat Ditemukan';
+                        locationBtn.disabled = false;
+                    } else {
+                        statusEl.textContent = 'Akurasi belum cukup';
+                        statusEl.style.color = '#FF9800';
+                        locationBtn.innerHTML = '<i class="material-icons left">refresh</i> Coba Lagi';
+                        locationBtn.disabled = false;
+                        if (tipEl) {
+                            tipEl.style.display = 'block';
+                            tipEl.textContent = 'Akurasi masih di atas 20m. Coba pindah ke area terbuka atau gunakan perangkat dengan GPS (HP).';
+                        }
+                    }
+                }, HIGH_ACCURACY_MAX_WAIT);
+
                 watchId = navigator.geolocation.watchPosition(
                     function(position) {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         const accuracy = position.coords.accuracy;
-
-                        // Update UI Teks
-                        displayEl.textContent = `Lokasi: ${lat.toFixed(7)}, ${lng.toFixed(7)}`;
 
                         // Cek apakah ini lokasi paling akurat sejauh ini
                         if (accuracy < bestAccuracy) {
@@ -418,35 +626,12 @@
                             saveLocation(lat, lng, accuracy);
                         }
 
-                        // Update Status Akurasi
-                        let accuracyHtml = `Akurasi: <strong>${Math.round(accuracy)} meter</strong>`;
-                        let accuracyClass = '';
+                        updateLocationUI(lat, lng, accuracy);
 
+                        // Stop watchPosition karena udah dapet akurasi bagus
                         if (accuracy <= TARGET_ACCURACY) {
-                            accuracyHtml += ` <i class="material-icons tiny" style="vertical-align: middle;">check_circle</i> Sangat Baik`;
-                            accuracyClass = 'accuracy-good';
-
-                            // Jika akurasi sudah bagus, update status jadi hijau
-                            statusEl.textContent = 'Terverifikasi (Akurat)';
-                            statusEl.style.color = '#4CAF50';
-                            locationBtn.innerHTML = '<i class="material-icons left">my_location</i> Lokasi Akurat Ditemukan';
-                            locationBtn.disabled = false;
-
-                            // Stop watchPosition karena udah dapet akurasi bagus
-                            if(watchId) navigator.geolocation.clearWatch(watchId);
-                        } else {
-                            accuracyHtml += ` <i class="material-icons tiny" style="vertical-align: middle;">warning</i> Mencari sinyal lebih baik...`;
-                            accuracyClass = 'accuracy-bad';
-
-                            // Masih mencari
-                            statusEl.textContent = 'Mencari presisi...';
-                            statusEl.style.color = '#FF9800';
+                            stopHighAccuracyWatch();
                         }
-
-                        accuracyEl.innerHTML = `<div class="accuracy-info ${accuracyClass}">${accuracyHtml}</div>`;
-
-                        // Update Peta
-                        updateMap(lat, lng, accuracy);
                     },
                     function(error) {
                         let msg = '';
@@ -463,20 +648,25 @@
                         locationBtn.innerHTML = '<i class="material-icons left">refresh</i> Coba Lagi';
 
                         // Stop watching on error
-                        if(watchId) navigator.geolocation.clearWatch(watchId);
+                        stopHighAccuracyWatch();
                     },
                     options
                 );
             }
 
+            const locationBtn = document.getElementById('getLocationBtn');
+            if (!locationBtn) {
+                return;
+            }
+
             // Event listener untuk tombol lokasi
-            document.getElementById('getLocationBtn').addEventListener('click', function() {
+            locationBtn.addEventListener('click', function() {
                 // Cek apakah tombol digunakan untuk "Gunakan Lokasi Ini" atau "Perbarui Lokasi"
                 const currentText = this.innerHTML;
 
-                if (currentText.includes('Gunakan Lokasi Ini') || currentText.includes('Lokasi Terakhir')) {
-                    // Jika tombol mengatakan "Gunakan Lokasi Ini", berikan feedback bahwa lokasi siap digunakan
-                    M.toast({html: 'Lokasi terakhir siap digunakan!'});
+                if (currentText.includes('Gunakan Lokasi Ini') || currentText.includes('Lokasi Akurat Ditemukan') || currentText.includes('Lokasi Terakhir')) {
+                    // Lokasi akurat siap digunakan
+                    M.toast({html: 'Lokasi akurat siap digunakan!'});
                 } else {
                     // Jika sedang tracking, stop dulu (reset)
                     if (watchId) {
@@ -486,6 +676,20 @@
                     startTracking();
                 }
             });
+
+            // Auto start jika izin sudah granted dan belum ada lokasi
+            if (navigator.permissions && !lastLocation) {
+                navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+                    if (result.state === 'granted') {
+                        setStatusMessage('Mendeteksi lokasi secara otomatis...', '#FF9800');
+                        startTracking();
+                    } else if (result.state === 'denied') {
+                        setStatusMessage('Izin lokasi ditolak di browser', '#F44336');
+                    }
+                }).catch(function() {
+                    // Permissions API tidak tersedia
+                });
+            }
         });
     </script>
 @endsection

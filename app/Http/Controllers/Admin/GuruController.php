@@ -233,8 +233,8 @@ class GuruController extends Controller
             abort(403, 'Unauthorized');
         }
         
-        // Ambil semua pengajuan izin dengan informasi guru, diurutkan berdasarkan tanggal terbaru
-        $pengajuanIzin = \App\Models\Izin::with('user')
+        // Ambil semua pengajuan izin dengan informasi guru dan informasi approval, diurutkan berdasarkan tanggal terbaru
+        $pengajuanIzin = \App\Models\Izin::with(['user', 'approvedBy'])
             ->orderBy('created_at', 'desc')
             ->get();
         
@@ -366,10 +366,20 @@ class GuruController extends Controller
             return response()->json(['success' => false, 'message' => 'Pengajuan izin ini sudah diproses sebelumnya.'], 400);
         }
 
-        $izin->update([
+        // Prepare update data
+        $updateData = [
             'status' => $request->status,
             'catatan_admin' => $request->catatan_admin ?? null,
-        ]);
+        ];
+
+        // If the status is approved or rejected, add approval information
+        if (in_array($request->status, ['disetujui', 'ditolak'])) {
+            $updateData['approved_by'] = $user->id;
+            $updateData['approved_at'] = now();
+            $updateData['admin_notes'] = $request->catatan_admin ?? null;
+        }
+
+        $izin->update($updateData);
 
         // Jika izin disetujui, update status di tabel absensi sesuai tanggal izin
         if ($request->status === 'disetujui') {
@@ -486,8 +496,8 @@ class GuruController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        $izin = Izin::with('user')->findOrFail($id);
-        
+        $izin = Izin::with(['user', 'approvedBy'])->findOrFail($id);
+
         // Format data for response
         $data = [
             'izin' => [
@@ -508,6 +518,11 @@ class GuruController extends Controller
                 'status' => $izin->status,
                 'status_formatted' => ucfirst($izin->status),
                 'catatan_admin' => $izin->catatan_admin,
+                'approved_by' => $izin->approvedBy ? $izin->approvedBy->nama : null,
+                'approved_by_email' => $izin->approvedBy ? $izin->approvedBy->email : null,
+                'approved_at' => $izin->approved_at,
+                'approved_at_formatted' => $izin->approved_at ? \Carbon\Carbon::parse($izin->approved_at)->format('d M Y H:i') : null,
+                'admin_notes' => $izin->admin_notes,
                 'created_at' => $izin->created_at,
                 'created_at_formatted' => \Carbon\Carbon::parse($izin->created_at)->format('d M Y H:i'),
             ]
@@ -925,9 +940,21 @@ class GuruController extends Controller
         // Ambil data absensi dengan lokasi untuk tanggal tertentu
         $query = \App\Models\Absensi::with('user:id,nama,gelar,jabatan')
             ->where('tanggal', $tanggal)
+            ->whereHas('user', function ($q) {
+                $q->where('role', 'guru');
+            })
             ->where(function($q) {
-                $q->whereNotNull('lokasi_masuk')
-                  ->orWhereNotNull('lokasi_pulang');
+                $q->where(function ($sub) {
+                    $sub->whereNotNull('lokasi_masuk')
+                        ->where('lokasi_masuk', '!=', '');
+                })->orWhere(function ($sub) {
+                    $sub->whereNotNull('lokasi_pulang')
+                        ->where('lokasi_pulang', '!=', '');
+                });
+            })
+            ->where(function ($q) {
+                $q->whereNotNull('jam_masuk')
+                    ->orWhereNotNull('jam_pulang');
             });
 
         // Tambahkan filter status jika disediakan
@@ -939,51 +966,58 @@ class GuruController extends Controller
 
         // Format data untuk peta
         $lokasiGuru = [];
+        $parseLokasi = function ($lokasi) {
+            if (!$lokasi) {
+                return null;
+            }
+            $parts = array_map('trim', explode(',', $lokasi));
+            if (count($parts) < 2) {
+                return null;
+            }
+            $lat = filter_var($parts[0], FILTER_VALIDATE_FLOAT);
+            $lng = filter_var($parts[1], FILTER_VALIDATE_FLOAT);
+            if ($lat === false || $lng === false) {
+                return null;
+            }
+            if (!is_finite($lat) || !is_finite($lng)) {
+                return null;
+            }
+            return ['lat' => (float) $lat, 'lng' => (float) $lng];
+        };
+
         foreach ($absensi as $item) {
             $user = $item->user;
             $namaLengkap = $user->gelar ? $user->nama . ' ' . $user->gelar : $user->nama;
 
             // Tambahkan lokasi masuk jika tersedia
             if ($item->lokasi_masuk) {
-                $lokasi = explode(',', $item->lokasi_masuk);
-                if (count($lokasi) == 2) {
-                    $lat = floatval(trim($lokasi[0]));
-                    $lng = floatval(trim($lokasi[1]));
-
-                    // Validasi bahwa koordinat valid (bukan NaN atau infinity)
-                    if (!is_nan($lat) && !is_nan($lng) && is_finite($lat) && is_finite($lng)) {
-                        $lokasiGuru[] = [
-                            'lat' => $lat,
-                            'lng' => $lng,
-                            'name' => $namaLengkap,
-                            'status' => $item->status,
-                            'time' => $item->jam_masuk ? \Carbon\Carbon::parse($item->jam_masuk)->format('H:i') : '-',
-                            'location_type' => 'masuk',
-                            'jabatan' => $user->jabatan ?? '-'
-                        ];
-                    }
+                $parsed = $parseLokasi($item->lokasi_masuk);
+                if ($parsed) {
+                    $lokasiGuru[] = [
+                        'lat' => $parsed['lat'],
+                        'lng' => $parsed['lng'],
+                        'name' => $namaLengkap,
+                        'status' => $item->status,
+                        'time' => $item->jam_masuk ? \Carbon\Carbon::parse($item->jam_masuk)->timezone('Asia/Jakarta')->format('H:i') : '-',
+                        'location_type' => 'masuk',
+                        'jabatan' => $user->jabatan ?? '-'
+                    ];
                 }
             }
 
             // Tambahkan lokasi pulang jika tersedia dan berbeda dari lokasi masuk
             if ($item->lokasi_pulang && $item->lokasi_pulang !== $item->lokasi_masuk) {
-                $lokasi = explode(',', $item->lokasi_pulang);
-                if (count($lokasi) == 2) {
-                    $lat = floatval(trim($lokasi[0]));
-                    $lng = floatval(trim($lokasi[1]));
-
-                    // Validasi bahwa koordinat valid (bukan NaN atau infinity)
-                    if (!is_nan($lat) && !is_nan($lng) && is_finite($lat) && is_finite($lng)) {
-                        $lokasiGuru[] = [
-                            'lat' => $lat,
-                            'lng' => $lng,
-                            'name' => $namaLengkap,
-                            'status' => $item->status,
-                            'time' => $item->jam_pulang ? \Carbon\Carbon::parse($item->jam_pulang)->format('H:i') : '-',
-                            'location_type' => 'pulang',
-                            'jabatan' => $user->jabatan ?? '-'
-                        ];
-                    }
+                $parsed = $parseLokasi($item->lokasi_pulang);
+                if ($parsed) {
+                    $lokasiGuru[] = [
+                        'lat' => $parsed['lat'],
+                        'lng' => $parsed['lng'],
+                        'name' => $namaLengkap,
+                        'status' => $item->status,
+                        'time' => $item->jam_pulang ? \Carbon\Carbon::parse($item->jam_pulang)->timezone('Asia/Jakarta')->format('H:i') : '-',
+                        'location_type' => 'pulang',
+                        'jabatan' => $user->jabatan ?? '-'
+                    ];
                 }
             }
         }
