@@ -417,18 +417,6 @@
                 coverTrigger: false
             });
             
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
-            }
-            
-            // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
-            
             // Server-side search is active, client-side search removed
             // The search form now sends a GET request to the server
         });

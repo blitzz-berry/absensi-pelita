@@ -6,9 +6,14 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f5f7fa;
+            background-color: #F5F7FB;
             margin: 0;
             padding: 0;
+        }
+
+        html,
+        body {
+            overflow-x: hidden;
         }
         
         .sidebar {
@@ -335,6 +340,147 @@
             height: 100%;
             background-color: rgba(0,0,0,0.5);
         }
+
+        #admin-pengajuan-izin .x-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+        }
+
+        #admin-pengajuan-izin .x-modal.is-open {
+            display: block;
+        }
+
+        #admin-pengajuan-izin .x-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.55);
+            z-index: 2990;
+        }
+
+        #admin-pengajuan-izin .x-dialog {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 3000;
+        }
+
+        #admin-pengajuan-izin .x-content {
+            width: min(900px, 95vw);
+            max-height: 90vh;
+            overflow: hidden;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #admin-pengajuan-izin .x-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            border: 1px solid #E5E7EB;
+            background: #ffffff;
+            color: #111827;
+            font-size: 22px;
+            line-height: 32px;
+            cursor: pointer;
+        }
+
+        #admin-pengajuan-izin .x-body {
+            padding: 22px 60px 22px 22px;
+            max-height: calc(90vh - 20px);
+            overflow: auto;
+            overflow-x: hidden;
+        }
+
+        #admin-pengajuan-izin .izin-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #2F80ED;
+            margin: 0 0 14px;
+        }
+
+        #admin-pengajuan-izin .izin-modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        #admin-pengajuan-izin .izin-section {
+            background: #F8FAFC;
+            border: 1px solid #E5E7EB;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+
+        #admin-pengajuan-izin .izin-modal-grid .izin-section {
+            margin-bottom: 0;
+        }
+
+        #admin-pengajuan-izin .izin-section-title {
+            font-weight: 800;
+            color: #2F80ED;
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+
+        #admin-pengajuan-izin .izin-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 6px 0;
+        }
+
+        #admin-pengajuan-izin .izin-row span:last-child {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        #admin-pengajuan-izin .izin-muted {
+            color: #6B7280;
+        }
+
+        #admin-pengajuan-izin .izin-text {
+            margin: 0;
+            color: #111827;
+        }
+
+        #admin-pengajuan-izin .izin-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        #admin-pengajuan-izin .izin-pill.approved { background: #DCFCE7; color: #166534; }
+        #admin-pengajuan-izin .izin-pill.rejected { background: #FEE2E2; color: #991B1B; }
+        #admin-pengajuan-izin .izin-pill.pending { background: #FEF3C7; color: #92400E; }
+
+        #admin-pengajuan-izin .izin-link {
+            color: #2F80ED;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.modal-lock {
+            overflow: hidden !important;
+        }
         
         /* Spinner animation */
         @keyframes spin {
@@ -506,7 +652,93 @@
             background: #e0e0e0;
             transform: scale(1.1);
         }
-        
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .card-content {
+                padding: 20px;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            .stat-number {
+                font-size: 22px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+
+            .table-responsive {
+                overflow: visible;
+            }
+
+            .history-table thead {
+                display: none;
+            }
+
+            .history-table,
+            .history-table tbody,
+            .history-table tr,
+            .history-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .history-table tr {
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                padding: 12px;
+                margin-bottom: 12px;
+                background: #ffffff;
+            }
+
+            .history-table td {
+                border: none;
+                padding: 6px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                text-align: left;
+            }
+
+            .history-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #64748b;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+            }
+
+            .history-table td.empty-cell {
+                display: block;
+                text-align: center;
+            }
+
+            .history-table td:last-child {
+                justify-content: flex-start;
+            }
+
+            .history-table td:last-child::before {
+                display: none;
+            }
+
+            .action-buttons {
+                justify-content: flex-start;
+            }
+        }
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -541,96 +773,157 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        #admin-pengajuan-izin {
+            overflow-x: hidden;
+        }
+
+        #admin-pengajuan-izin .is-container {
+            width: 100%;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 1024px) {
+            #admin-pengajuan-izin .is-container {
+                max-width: 640px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            #admin-pengajuan-izin .izin-sakit-main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 16px 0 24px !important;
+            }
+
+            #admin-pengajuan-izin .is-container {
+                padding-left: 16px;
+                padding-right: 16px;
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
+            }
+
+            #admin-pengajuan-izin .is-cards {
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            #admin-pengajuan-izin .is-card {
+                width: 100%;
+                margin: 0;
+                padding: 16px;
+                border-radius: 16px;
+                box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+                background: #ffffff;
+                box-sizing: border-box;
+            }
+
+            #admin-pengajuan-izin .izin-modal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #admin-pengajuan-izin .x-dialog {
+                padding: 16px;
+            }
+
+            #admin-pengajuan-izin .x-body {
+                padding: 20px 52px 20px 20px;
+            }
+        }
     </style>
 @endsection
 
 @section('content')
-    <!-- Sidebar -->
-    @include('admin.components.sidebar')
-    
-    <!-- Top Bar -->
-    @include('admin.components.topbar', ['currentUser' => $currentUser])
-    
-    <!-- Main Content - Full Screen -->
-    <div class="main-content">
-        <div class="welcome-section">
-            <h4 class="welcome-title">Pengajuan Izin & Sakit</h4>
-            <p class="welcome-subtitle">Manajemen pengajuan izin guru di PLUS Pelita Insani</p>
-        </div>
+    <div id="admin-pengajuan-izin">
+        <!-- Sidebar -->
+        @include('admin.components.sidebar')
         
-        <!-- Stats Cards -->
-        <div class="stats-container">
-            <div class="stat-card stat-diajukan">
-                <div class="stat-icon">
-                    <i class="material-icons">hourglass_empty</i>
-                </div>
-                <div class="stat-number">{{ $pengajuanIzin->where('status', 'diajukan')->count() }}</div>
-                <p class="stat-label">Menunggu Persetujuan</p>
-            </div>
-            
-            <div class="stat-card stat-disetujui">
-                <div class="stat-icon">
-                    <i class="material-icons">check_circle</i>
-                </div>
-                <div class="stat-number">{{ $pengajuanIzin->where('status', 'disetujui')->count() }}</div>
-                <p class="stat-label">Telah Disetujui</p>
-            </div>
-            
-            <div class="stat-card stat-ditolak">
-                <div class="stat-icon">
-                    <i class="material-icons">cancel</i>
-                </div>
-                <div class="stat-number">{{ $pengajuanIzin->where('status', 'ditolak')->count() }}</div>
-                <p class="stat-label">Telah Ditolak</p>
-            </div>
-        </div>
+        <!-- Top Bar -->
+        @include('admin.components.topbar', ['currentUser' => $currentUser])
         
-        <!-- Riwayat Pengajuan Izin -->
-        <div class="card dashboard-card">
-            <div class="card-content">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                    <span class="card-title">Daftar Pengajuan Izin</span>
-                    <div style="font-size: 14px; color: #757575;">
-                        Total: {{ $pengajuanIzin->count() }} pengajuan
+        <!-- Main Content - Full Screen -->
+        <div class="main-content izin-sakit-main">
+            <div class="is-container">
+                <div class="welcome-section">
+                    <h4 class="welcome-title">Pengajuan Izin & Sakit</h4>
+                    <p class="welcome-subtitle">Manajemen pengajuan izin guru di PLUS Pelita Insani</p>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-container is-cards">
+                    <div class="stat-card stat-diajukan is-card">
+                        <div class="stat-icon">
+                            <i class="material-icons">hourglass_empty</i>
+                        </div>
+                        <div class="stat-number">{{ $pengajuanIzin->where('status', 'diajukan')->count() }}</div>
+                        <p class="stat-label">Menunggu Persetujuan</p>
+                    </div>
+                    
+                    <div class="stat-card stat-disetujui is-card">
+                        <div class="stat-icon">
+                            <i class="material-icons">check_circle</i>
+                        </div>
+                        <div class="stat-number">{{ $pengajuanIzin->where('status', 'disetujui')->count() }}</div>
+                        <p class="stat-label">Telah Disetujui</p>
+                    </div>
+                    
+                    <div class="stat-card stat-ditolak is-card">
+                        <div class="stat-icon">
+                            <i class="material-icons">cancel</i>
+                        </div>
+                        <div class="stat-number">{{ $pengajuanIzin->where('status', 'ditolak')->count() }}</div>
+                        <p class="stat-label">Telah Ditolak</p>
                     </div>
                 </div>
                 
-                <div class="table-responsive">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 18%;">Guru</th>
-                                <th style="width: 13%;">Tanggal</th>
-                                <th style="width: 8%;">Jenis</th>
-                                <th style="width: 18%;">Periode</th>
-                                <th style="width: 15%;">Alasan</th>
-                                <th style="width: 8%;">Status</th>
-                                <th style="width: 15%;">Disetujui Oleh</th>
-                                <th style="width: 5%;">Aksi</th>
+                <!-- Riwayat Pengajuan Izin -->
+                <div class="card dashboard-card">
+                    <div class="card-content">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                            <span class="card-title">Daftar Pengajuan Izin</span>
+                            <div style="font-size: 14px; color: #757575;">
+                                Total: {{ $pengajuanIzin->count() }} pengajuan
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 18%;">Guru</th>
+                                        <th style="width: 13%;">Tanggal</th>
+                                        <th style="width: 8%;">Jenis</th>
+                                        <th style="width: 18%;">Periode</th>
+                                        <th style="width: 15%;">Alasan</th>
+                                        <th style="width: 8%;">Status</th>
+                                        <th style="width: 15%;">Disetujui Oleh</th>
+                                        <th style="width: 5%;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($pengajuanIzin as $izin)
                                 <tr>
-                                    <td>
+                                    <td data-label="Guru">
                                         <div class="user-info">
                                             <div class="user-avatar">{{ strtoupper(substr($izin->user->nama ?? 'N/A', 0, 2)) }}</div>
                                             <span>{{ $izin->user->nama ?? 'N/A' }}</span>
                                         </div>
                                     </td>
-                                    <td>{{ \Carbon\Carbon::parse($izin->created_at)->format('d M Y') }}</td>
-                                    <td>
+                                    <td data-label="Tanggal">{{ \Carbon\Carbon::parse($izin->created_at)->format('d M Y') }}</td>
+                                    <td data-label="Jenis">
                                         <span style="background: {{ $izin->jenis_pengajuan === 'izin' ? '#e3f2fd' : '#fce4ec' }}; color: {{ $izin->jenis_pengajuan === 'izin' ? '#1976D2' : '#C2185B' }}; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
                                             {{ ucfirst($izin->jenis_pengajuan) }}
                                         </span>
                                     </td>
-                                    <td>{{ \Carbon\Carbon::parse($izin->tanggal_mulai)->format('d M') }} - {{ \Carbon\Carbon::parse($izin->tanggal_selesai)->format('d M Y') }}</td>
-                                    <td>
+                                    <td data-label="Periode">{{ \Carbon\Carbon::parse($izin->tanggal_mulai)->format('d M') }} - {{ \Carbon\Carbon::parse($izin->tanggal_selesai)->format('d M Y') }}</td>
+                                    <td data-label="Alasan">
                                         <div style="max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $izin->alasan }}">
                                             {{ $izin->alasan }}
                                         </div>
                                     </td>
-                                    <td>
+                                    <td data-label="Status">
                                         <span class="status-badge
                                             @if($izin->status === 'diajukan') status-diajukan
                                             @elseif($izin->status === 'disetujui') status-disetujui
@@ -638,7 +931,7 @@
                                             {{ ucfirst($izin->status) }}
                                         </span>
                                     </td>
-                                    <td>
+                                    <td data-label="Disetujui Oleh">
                                         @if($izin->status !== 'diajukan' && $izin->approvedBy)
                                             <div style="font-size: 12px;">
                                                 <div>{{ $izin->approvedBy->nama ?? 'N/A' }}</div>
@@ -650,7 +943,7 @@
                                             <span style="color: #9e9e9e; font-style: italic;">-</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td data-label="Aksi">
                                         <div class="action-buttons">
                                             <button class="action-button btn-detail" data-id="{{ $izin->id }}" title="Lihat detail">
                                                 <i class="material-icons" style="font-size: 18px;">remove_red_eye</i>
@@ -669,7 +962,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" style="text-align: center; padding: 60px;">
+                                    <td colspan="8" class="empty-cell" style="text-align: center; padding: 60px;">
                                         <i class="material-icons" style="font-size: 48px; color: #bdbdbd; margin-bottom: 15px;">event_note</i>
                                         <p style="margin: 0; color: #9e9e9e; font-size: 16px;">Tidak ada pengajuan izin</p>
                                         <p style="margin: 5px 0 0 0; color: #bdbdbd; font-size: 14px;">Belum ada guru yang mengajukan izin/sakit</p>
@@ -682,20 +975,21 @@
             </div>
         </div>
         
+            </div>
+        </div>
+
         <!-- Modal Detail Izin -->
-        <div id="detailModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Detail Pengajuan Izin</h4>
-                    <span class="close">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <div id="detail-content">
-                        <!-- Detail akan dimuat secara dinamis -->
+        <div id="izinDetailModal" class="x-modal" aria-hidden="true">
+            <div class="x-backdrop" data-close></div>
+            <div class="x-dialog" role="dialog" aria-modal="true" aria-labelledby="izinDetailTitle">
+                <div class="x-content">
+                    <button type="button" class="x-close" data-close aria-label="Tutup">&times;</button>
+                    <div class="x-body">
+                        <h4 class="izin-title" id="izinDetailTitle">Detail Pengajuan Izin</h4>
+                        <div id="detail-content">
+                            <!-- Detail akan dimuat secara dinamis -->
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary close-modal">Tutup</button>
                 </div>
             </div>
         </div>
@@ -737,44 +1031,85 @@
                 coverTrigger: false
             });
             
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
-            }
-            
-            // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
-            
             // Modal functionality
-            const modals = document.querySelectorAll('.modal');
-            const closeButtons = document.querySelectorAll('.close, .close-modal');
-            
-            // Close modal function
-            function closeModal(modal) {
-                modal.style.display = 'none';
+            const aksiModal = document.getElementById('aksiModal');
+            const detailModal = document.getElementById('izinDetailModal');
+            const detailContent = document.getElementById('detail-content');
+
+            function updateBodyLock() {
+                const detailOpen = detailModal && detailModal.classList.contains('is-open');
+                const aksiOpen = aksiModal && aksiModal.style.display === 'block';
+                if (detailOpen || aksiOpen) {
+                    document.body.classList.add('modal-lock');
+                    return;
+                }
+                document.body.classList.remove('modal-lock');
             }
-            
-            // Close modals when clicking on close button or outside modal
-            closeButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const modal = this.closest('.modal') || document.getElementById('detailModal') || document.getElementById('aksiModal');
-                    if (modal) {
-                        closeModal(modal);
-                    }
+
+            function openDetailModal() {
+                if (!detailModal) {
+                    return;
+                }
+                closeAksiModal();
+                detailModal.classList.add('is-open');
+                detailModal.setAttribute('aria-hidden', 'false');
+                updateBodyLock();
+            }
+
+            function closeDetailModal() {
+                if (!detailModal) {
+                    return;
+                }
+                detailModal.classList.remove('is-open');
+                detailModal.setAttribute('aria-hidden', 'true');
+                updateBodyLock();
+            }
+
+            function openAksiModal() {
+                if (!aksiModal) {
+                    return;
+                }
+                closeDetailModal();
+                aksiModal.style.display = 'block';
+                updateBodyLock();
+            }
+
+            function closeAksiModal() {
+                if (!aksiModal) {
+                    return;
+                }
+                aksiModal.style.display = 'none';
+                updateBodyLock();
+            }
+
+            if (detailModal) {
+                detailModal.querySelectorAll('[data-close]').forEach(button => {
+                    button.addEventListener('click', closeDetailModal);
                 });
-            });
-            
-            // Close modals when clicking outside
+            }
+
+            if (aksiModal) {
+                aksiModal.querySelectorAll('.close, .close-modal').forEach(button => {
+                    button.addEventListener('click', closeAksiModal);
+                });
+            }
+
             window.addEventListener('click', function(event) {
-                modals.forEach(modal => {
-                    if (event.target === modal) {
-                        closeModal(modal);
+                if (aksiModal && event.target === aksiModal) {
+                    closeAksiModal();
+                }
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    if (detailModal && detailModal.classList.contains('is-open')) {
+                        closeDetailModal();
+                        return;
                     }
-                });
+                    if (aksiModal && aksiModal.style.display === 'block') {
+                        closeAksiModal();
+                    }
+                }
             });
             
             // Detail button functionality
@@ -785,14 +1120,17 @@
                     const id = this.getAttribute('data-id');
                     
                     // Show loading indicator
-                    document.getElementById('detail-content').innerHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #1976D2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-                            <p style="margin-top: 15px;">Memuat detail...</p>
+                    detailContent.innerHTML = `
+                        <div class="izin-section">
+                            <div class="izin-section-title">Memuat</div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="spinner" style="border: 4px solid #e5e7eb; border-top: 4px solid #2F80ED; border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite;"></div>
+                                <span class="izin-muted">Memuat detail...</span>
+                            </div>
                         </div>
                     `;
                     
-                    document.getElementById('detailModal').style.display = 'block';
+                    openDetailModal();
                     
                     // Fetch detail via AJAX
                     fetch(`/admin/pengajuan-izin/${id}/detail`, {
@@ -805,130 +1143,114 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            document.getElementById('detail-content').innerHTML = `
-                                <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-                                    <div style="flex: 1;">
-                                        <h5 style="margin: 0 0 10px 0; color: #1976D2;">Informasi Guru</h5>
-                                        <div style="display: flex; align-items: center; gap: 15px; background: #f5f7fa; padding: 15px; border-radius: 8px;">
-                                            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #1976D2, #2196F3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px;">
-                                                ${data.izin.user.nama.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <div style="font-weight: 600;">${data.izin.user.nama}</div>
-                                                <div style="font-size: 14px; color: #666;">${data.izin.user.nomor_id}</div>
-                                            </div>
+                            const statusClass = data.izin.status === 'diajukan'
+                                ? 'pending'
+                                : (data.izin.status === 'disetujui' ? 'approved' : 'rejected');
+
+                            detailContent.innerHTML = `
+                                <div class="izin-modal-grid">
+                                    <div class="izin-section">
+                                        <div class="izin-section-title">Informasi Guru</div>
+                                        <div class="izin-row">
+                                            <span class="izin-muted">Nama</span>
+                                            <span>${data.izin.user.nama}</span>
+                                        </div>
+                                        <div class="izin-row">
+                                            <span class="izin-muted">Nomor ID</span>
+                                            <span>${data.izin.user.nomor_id}</span>
                                         </div>
                                     </div>
-                                    
-                                    <div style="flex: 1;">
-                                        <h5 style="margin: 0 0 10px 0; color: #1976D2;">Periode Izin</h5>
-                                        <div style="background: #f5f7fa; padding: 15px; border-radius: 8px;">
-                                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                                <span>Mulai:</span>
-                                                <span style="font-weight: 500;">${data.izin.tanggal_mulai_formatted}</span>
-                                            </div>
-                                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                                <span>Selesai:</span>
-                                                <span style="font-weight: 500;">${data.izin.tanggal_selesai_formatted}</span>
-                                            </div>
-                                            <div style="display: flex; justify-content: space-between;">
-                                                <span>Durasi:</span>
-                                                <span style="font-weight: 500;">${data.izin.durasi} hari</span>
-                                            </div>
+
+                                    <div class="izin-section">
+                                        <div class="izin-section-title">Periode Izin</div>
+                                        <div class="izin-row">
+                                            <span class="izin-muted">Mulai</span>
+                                            <span>${data.izin.tanggal_mulai_formatted}</span>
                                         </div>
-                                    </div>
-                                </div>
-                                
-                                <div style="margin-bottom: 20px;">
-                                    <h5 style="margin: 0 0 10px 0; color: #1976D2;">Detail Pengajuan</h5>
-                                    <div style="background: #f5f7fa; padding: 15px; border-radius: 8px;">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                            <span>Jenis Pengajuan:</span>
-                                            <span style="font-weight: 500;">${data.izin.jenis_pengajuan_formatted}</span>
+                                        <div class="izin-row">
+                                            <span class="izin-muted">Selesai</span>
+                                            <span>${data.izin.tanggal_selesai_formatted}</span>
                                         </div>
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                            <span>Tanggal Pengajuan:</span>
-                                            <span style="font-weight: 500;">${data.izin.created_at_formatted}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <span>Status:</span>
-                                            <span style="font-weight: 500;">
-                                                <span class="status-badge 
-                                                    ${data.izin.status === 'diajukan' ? 'status-diajukan' : 
-                                                      data.izin.status === 'disetujui' ? 'status-disetujui' : 
-                                                      'status-ditolak'}">
-                                                    ${data.izin.status_formatted}
-                                                </span>
-                                            </span>
+                                        <div class="izin-row">
+                                            <span class="izin-muted">Durasi</span>
+                                            <span>${data.izin.durasi} hari</span>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div style="margin-bottom: 20px;">
-                                    <h5 style="margin: 0 0 10px 0; color: #1976D2;">Alasan</h5>
-                                    <div style="background: #f5f7fa; padding: 15px; border-radius: 8px;">
-                                        <p style="margin: 0;">${data.izin.alasan}</p>
+
+                                <div class="izin-section">
+                                    <div class="izin-section-title">Detail Pengajuan</div>
+                                    <div class="izin-row">
+                                        <span class="izin-muted">Jenis Pengajuan</span>
+                                        <span>${data.izin.jenis_pengajuan_formatted}</span>
                                     </div>
+                                    <div class="izin-row">
+                                        <span class="izin-muted">Tanggal Pengajuan</span>
+                                        <span>${data.izin.created_at_formatted}</span>
+                                    </div>
+                                    <div class="izin-row">
+                                        <span class="izin-muted">Status</span>
+                                        <span class="izin-pill ${statusClass}">${data.izin.status_formatted}</span>
+                                    </div>
+                                </div>
+
+                                <div class="izin-section">
+                                    <div class="izin-section-title">Alasan</div>
+                                    <p class="izin-text">${data.izin.alasan}</p>
                                 </div>
                                 
                                 ${data.izin.catatan_admin ? `
-                                <div style="margin-bottom: 20px;">
-                                    <h5 style="margin: 0 0 10px 0; color: #1976D2;">Catatan Admin</h5>
-                                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
-                                        <p style="margin: 0;">${data.izin.catatan_admin}</p>
-                                    </div>
+                                <div class="izin-section">
+                                    <div class="izin-section-title">Catatan Admin</div>
+                                    <p class="izin-text">${data.izin.catatan_admin}</p>
                                 </div>
                                 ` : ''}
 
                                 ${(data.izin.status === 'disetujui' || data.izin.status === 'ditolak') && data.izin.approved_by ? `
-                                <div style="margin-bottom: 20px;">
-                                    <h5 style="margin: 0 0 10px 0; color: #1976D2;">Informasi Persetujuan</h5>
-                                    <div style="background: #f1f8e9; padding: 15px; border-radius: 8px;">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                            <span>Disetujui/Ditolak oleh:</span>
-                                            <span style="font-weight: 500;">${data.izin.approved_by}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                            <span>Tanggal:</span>
-                                            <span style="font-weight: 500;">${data.izin.approved_at_formatted}</span>
-                                        </div>
-                                        ${data.izin.admin_notes ? `
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <span>Catatan:</span>
-                                            <span style="font-weight: 500;">${data.izin.admin_notes}</span>
-                                        </div>
-                                        ` : ''}
+                                <div class="izin-section">
+                                    <div class="izin-section-title">Informasi Persetujuan</div>
+                                    <div class="izin-row">
+                                        <span class="izin-muted">Disetujui/Ditolak oleh</span>
+                                        <span>${data.izin.approved_by}</span>
                                     </div>
+                                    <div class="izin-row">
+                                        <span class="izin-muted">Tanggal</span>
+                                        <span>${data.izin.approved_at_formatted}</span>
+                                    </div>
+                                    ${data.izin.admin_notes ? `
+                                    <div class="izin-row">
+                                        <span class="izin-muted">Catatan</span>
+                                        <span>${data.izin.admin_notes}</span>
+                                    </div>
+                                    ` : ''}
                                 </div>
                                 ` : ''}
 
                                 ${data.izin.bukti_file ? `
-                                <div style="margin-bottom: 20px;">
-                                    <h5 style="margin: 0 0 10px 0; color: #1976D2;">Bukti Pendukung</h5>
-                                    <div style="background: #f5f7fa; padding: 15px; border-radius: 8px; text-align: center;">
-                                        <a href="/storage/izin_files/${data.izin.bukti_file}" target="_blank" style="color: #1976D2; text-decoration: none;">
-                                            <i class="material-icons" style="font-size: 48px;">insert_drive_file</i>
-                                            <div>${data.izin.bukti_file}</div>
-                                        </a>
-                                    </div>
+                                <div class="izin-section">
+                                    <div class="izin-section-title">Bukti Pendukung</div>
+                                    <a class="izin-link" href="/storage/izin_files/${data.izin.bukti_file}" target="_blank" rel="noopener">
+                                        <i class="material-icons">insert_drive_file</i>
+                                        <span>${data.izin.bukti_file}</span>
+                                    </a>
                                 </div>
                                 ` : ''}
                             `;
                         } else {
-                            document.getElementById('detail-content').innerHTML = `
-                                <div style="text-align: center; padding: 40px;">
-                                    <i class="material-icons" style="font-size: 48px; color: #F44336; margin-bottom: 15px;">error</i>
-                                    <p>Error memuat detail: ${data.message}</p>
+                            detailContent.innerHTML = `
+                                <div class="izin-section">
+                                    <div class="izin-section-title">Gagal memuat</div>
+                                    <p class="izin-text">Error memuat detail: ${data.message}</p>
                                 </div>
                             `;
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        document.getElementById('detail-content').innerHTML = `
-                            <div style="text-align: center; padding: 40px;">
-                                <i class="material-icons" style="font-size: 48px; color: #F44336; margin-bottom: 15px;">error</i>
-                                <p>Error memuat detail. Silakan coba lagi.</p>
+                        detailContent.innerHTML = `
+                            <div class="izin-section">
+                                <div class="izin-section-title">Gagal memuat</div>
+                                <p class="izin-text">Error memuat detail. Silakan coba lagi.</p>
                             </div>
                         `;
                     });
@@ -950,7 +1272,7 @@
                     document.getElementById('submitAksi').className = 'btn btn-success';
                     document.getElementById('submitAksi').textContent = 'Setujui';
                     
-                    document.getElementById('aksiModal').style.display = 'block';
+                    openAksiModal();
                 });
             });
             
@@ -969,7 +1291,7 @@
                     document.getElementById('submitAksi').className = 'btn btn-danger';
                     document.getElementById('submitAksi').textContent = 'Tolak';
                     
-                    document.getElementById('aksiModal').style.display = 'block';
+                    openAksiModal();
                 });
             });
             
@@ -999,7 +1321,7 @@
                 .then(data => {
                     if (data.success) {
                         // Close modal
-                        document.getElementById('aksiModal').style.display = 'none';
+                        closeAksiModal();
                         
                         // Show success message
                         alert(data.message);

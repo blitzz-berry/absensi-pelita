@@ -338,88 +338,182 @@
         }
         
         /* Modal styles */
-        .modal {
+        html.modal-open,
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .absensi-modal {
             display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            inset: 0;
+            z-index: 2000;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow: hidden;
         }
-        
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
+
+        .absensi-modal.is-open {
+            display: flex;
+        }
+
+        .absensi-modal .absensi-dialog {
+            width: calc(100% - 2rem);
+            max-width: 920px;
+            margin: 0;
+        }
+
+        .absensi-modal .absensi-content {
+            background-color: #ffffff;
             padding: 0;
             border: none;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 800px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
+            border-radius: 20px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.3);
+            max-height: calc(100vh - 64px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
-        .modal-header {
-            border-bottom: 1px solid #e0e0e0;
-            padding: 20px 30px;
+        .absensi-modal .modal-header {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 18px 22px;
             margin-bottom: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: #ffffff;
         }
         
-        .modal-title {
+        .absensi-modal .modal-title {
             font-weight: 600;
             color: #212121;
             margin: 0;
             font-size: 20px;
         }
         
-        .modal-body {
-            padding: 20px 30px;
+        .absensi-modal .modal-body {
+            padding: 24px;
             margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: #ffffff;
+            overflow: auto;
+            flex: 1;
+            min-height: 0;
+            max-height: calc(100vh - 160px);
+        }
+
+        .absensi-modal .modal-body > * {
+            width: 100%;
         }
         
-        .close {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
+        .absensi-modal .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: #f8fafc;
+            color: #0f172a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            line-height: 1;
+            transition: all 0.2s ease;
+        }
+
+        .absensi-modal .modal-close:hover {
+            background: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.6);
+        }
+
+        .absensi-modal .modal-close svg {
+            width: 18px;
+            height: 18px;
         }
         
-        .close:hover {
-            color: #000;
-        }
-        
-        .video-container {
+        .camera-preview {
+            position: relative;
             width: 100%;
-            text-align: center;
-            margin: 20px 0;
+            aspect-ratio: 16 / 9;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #e5e7eb;
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
+            border: 1px solid rgba(148, 163, 184, 0.3);
         }
-        
+
         #video {
+            position: absolute;
+            inset: 0;
             width: 100%;
-            max-width: 400px;
-            height: auto;
-            border: 2px solid #1976D2;
-            border-radius: 8px;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        #capturedImageContainer {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        #capturedImageContainer:empty {
+            display: none;
+        }
+
+        .camera-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        #locationStatusMsg {
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #ffffff;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        #statusMessage {
+            margin: 0;
         }
         
         .capture-btn {
-            background: linear-gradient(135deg, #1976D2, #2196F3);
+            min-width: 170px;
+            background: #1976D2;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            border-radius: 6px;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 16px;
             cursor: pointer;
-            margin: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             transition: all 0.3s ease;
+            box-shadow: 0 10px 18px rgba(25, 118, 210, 0.25);
+        }
+
+        .capture-btn.secondary {
+            background: #ffffff;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: #6b7280;
+            box-shadow: none;
         }
         
         .capture-btn:hover {
@@ -433,11 +527,141 @@
         
         .captured-image {
             width: 100%;
-            max-width: 400px;
-            margin: 15px auto;
+            height: 100%;
             display: block;
-            border: 2px solid #4CAF50;
-            border-radius: 8px;
+            border-radius: 16px;
+            object-fit: cover;
+        }
+
+        .history-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .history-title::after {
+            content: '';
+            display: block;
+            width: 42px;
+            height: 3px;
+            background: #1976D2;
+            border-radius: 999px;
+            margin-top: 6px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        .history-table th {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .history-table td {
+            padding: 12px;
+            font-size: 14px;
+            color: #0f172a;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        @media (max-width: 576px) {
+            .absensi-modal {
+                padding: 0;
+                align-items: flex-end;
+                overflow-y: auto;
+            }
+
+            .absensi-modal .absensi-dialog {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .absensi-modal .absensi-content {
+                border-radius: 20px 20px 0 0;
+                max-height: 92vh;
+            }
+
+            .absensi-modal .modal-header {
+                padding: 16px 18px;
+            }
+
+            .absensi-modal .modal-title {
+                font-size: 18px;
+            }
+
+            .absensi-modal .modal-body {
+                padding: 16px;
+                gap: 16px;
+                max-height: calc(100vh - 140px);
+            }
+
+            .camera-preview {
+                border-radius: 16px;
+            }
+
+            .camera-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .capture-btn {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 10px;
+                font-size: 13px;
+            }
+        }
+
+        .history-table tr:first-child td {
+            border-top: none;
+        }
+
+        .history-table td.empty {
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .camera-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+        }
+
+        .camera-placeholder svg {
+            width: 52px;
+            height: 52px;
+            stroke: currentColor;
+        }
+
+        .aux-status {
+            display: none;
         }
         
         .loading {
@@ -587,25 +811,63 @@
     </div>
     
     <!-- Modal untuk kamera -->
-    <div id="cameraModal" class="modal">
-        <div class="modal-content">
+    <div id="cameraModal" class="absensi-modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="absensi-dialog">
+            <div class="absensi-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="modal-title">Absensi Masuk</h4>
-                <span class="close">&times;</span>
+                <button type="button" class="modal-close" aria-label="Tutup">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
             </div>
             <div class="modal-body">
-                <div class="video-container">
+                <div class="camera-preview">
                     <video id="video" autoplay playsinline></video>
+                    <div id="capturedImageContainer"></div>
+                    <div class="camera-placeholder" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6">
+                            <path d="M3 7a2 2 0 0 1 2-2h3l1.5-2h5L16 5h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/>
+                            <circle cx="12" cy="12" r="3.5"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="center-align">
-                    <button id="captureBtn" class="capture-btn">Ambil Foto</button>
-                    <button id="submitBtn" class="capture-btn" disabled>Submit Absensi</button>
-                </div>
-                <div class="center-align" id="locationStatusMsg" style="margin-top: 10px; font-size: 14px; font-weight: 500;">
+                <div class="center-align aux-status" id="locationStatusMsg">
                     <span style="color: #9E9E9E;">Menunggu Lokasi...</span>
                 </div>
-                <div id="capturedImageContainer" class="center-align"></div>
-                <p class="center-align" id="statusMessage"></p>
+                <div class="camera-actions">
+                    <button id="captureBtn" class="capture-btn" type="button">Ambil Foto</button>
+                    <button id="submitBtn" class="capture-btn" type="button" disabled>Submit Absen</button>
+                    <button id="retryBtn" class="capture-btn secondary" type="button">Ulangi</button>
+                </div>
+                <div class="history-section">
+                    <div class="history-title">Riwayat Absensi Terakhir</div>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Jam Masuk</th>
+                                <th>Jam Pulang</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($riwayat_absensi as $absensi)
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($absensi->tanggal)->format('d M Y') }}</td>
+                                    <td>{{ $absensi->jam_masuk ? \Carbon\Carbon::parse($absensi->jam_masuk)->format('H:i') : '-' }}</td>
+                                    <td>{{ $absensi->jam_pulang ? \Carbon\Carbon::parse($absensi->jam_pulang)->format('H:i') : '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="empty">Belum ada riwayat</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <p class="center-align aux-status" id="statusMessage"></p>
+            </div>
             </div>
         </div>
     </div>
@@ -628,27 +890,56 @@
             let userLng = null;
             let locationAccuracy = null;
             let watchId = null;
+            let lastFocusedElement = null;
+            let optimisticStatus = null;
             const TARGET_ACCURACY = 50; // Toleransi 50 meter untuk absen cepat
+            const systemSettings = @json($system_settings ?? []);
+            const LOCATION_REQUIRED = systemSettings.lokasi_wajib !== false;
+            const SELFIE_REQUIRED = systemSettings.selfie_wajib !== false;
+
+            const captureBtn = document.getElementById('captureBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const retryBtn = document.getElementById('retryBtn');
+            const SUBMIT_TEXT = 'Submit Absen';
+
+            function isFiniteNumber(value) {
+                return typeof value === 'number' && !isNaN(value);
+            }
+
+            function hasLocationFix() {
+                return isFiniteNumber(userLat)
+                    && isFiniteNumber(userLng)
+                    && isFiniteNumber(locationAccuracy);
+            }
+
+            function updateSubmitState() {
+                if (!submitBtn) {
+                    return;
+                }
+                const canSubmit = (!SELFIE_REQUIRED || !!capturedImage);
+                submitBtn.disabled = !canSubmit;
+            }
 
             
-            // Update live clock
+            // Update dashboard clock and date in WIB
             function updateClock() {
                 try {
                     const now = new Date();
-                    const timeString = now.toLocaleTimeString();
-                    const dateString = now.toLocaleDateString('id-ID', { 
-                        day: '2-digit', 
-                        month: 'short', 
-                        year: 'numeric' 
+                    const timeString = window.formatWibTime ? window.formatWibTime(now) : now.toLocaleTimeString('en-GB', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                        timeZone: 'Asia/Jakarta'
+                    });
+                    const dateString = window.formatWibDate ? window.formatWibDate(now) : now.toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        timeZone: 'Asia/Jakarta'
                     });
                     
-                    const liveClockElement = document.getElementById('live-clock');
                     const currentTimeElement = document.getElementById('current-time');
                     const currentDateElement = document.getElementById('current-date');
-                    
-                    if (liveClockElement) {
-                        liveClockElement.textContent = timeString;
-                    }
                     
                     if (currentTimeElement) {
                         currentTimeElement.textContent = timeString;
@@ -664,12 +955,15 @@
             
             // Update clock immediately and then every second
             setTimeout(updateClock, 100);
-            setInterval(updateClock, 1000);
+            setInterval(updateClock, 60000);
             
             // (HAPUS DUPLIKASI VARIABEL DI SINI) - Done
             
             // Fungsi Start Tracking Location (Background)
             function startLocationTracking() {
+                if (!LOCATION_REQUIRED) {
+                    return;
+                }
                 if (!navigator.geolocation) {
                     console.error("Geolocation tidak didukung.");
                     return;
@@ -677,7 +971,7 @@
                 
                 const options = {
                     enableHighAccuracy: true,
-                    timeout: 20000,
+                    timeout: 30000,
                     maximumAge: 0
                 };
                 
@@ -690,21 +984,35 @@
                         // Update status di modal jika sedang terbuka
                         const locationStatusEl = document.getElementById('locationStatusMsg');
                         if (locationStatusEl) {
+                            locationStatusEl.style.display = 'block';
                             if (locationAccuracy <= TARGET_ACCURACY) {
                                 locationStatusEl.innerHTML = `<span style="color: #4CAF50;"><i class="material-icons tiny">check</i> Lokasi Siap (Akurasi: ${Math.round(locationAccuracy)}m)</span>`;
-                                // Enable submit button if photo exists
-                                if(capturedImage) document.getElementById('submitBtn').disabled = false;
                             } else {
-                                locationStatusEl.innerHTML = `<span style="color: #FF9800;"><i class="material-icons tiny">warning</i> Mencari sinyal lebih baik... (${Math.round(locationAccuracy)}m)</span>`;
+                                locationStatusEl.innerHTML = `<span style="color: #FF9800;"><i class="material-icons tiny">warning</i> Akurasi ${Math.round(locationAccuracy)}m, tetap bisa submit.</span>`;
                             }
+                            updateSubmitState();
                         }
                     },
                     function(error) {
-                        console.error("Error lokasi:", error);
                         const locationStatusEl = document.getElementById('locationStatusMsg');
-                        if (locationStatusEl) {
-                            locationStatusEl.innerHTML = `<span style="color: #F44336;">Gagal mendapatkan lokasi. Pastikan GPS aktif.</span>`;
+                        if (error && error.code === error.TIMEOUT) {
+                            console.warn("Lokasi timeout, mencoba lagi...", error);
+                            if (locationStatusEl) {
+                                locationStatusEl.style.display = 'block';
+                                locationStatusEl.innerHTML = `<span style="color: #FF9800;"><i class="material-icons tiny">schedule</i> Lokasi timeout, mencoba lagi...</span>`;
+                            }
+                            return;
                         }
+
+                        console.error("Error lokasi:", error);
+                        if (locationStatusEl) {
+                            const message = error && error.code === error.PERMISSION_DENIED
+                                ? 'Izin lokasi ditolak. Aktifkan izin lokasi di browser.'
+                                : 'Gagal mendapatkan lokasi. Pastikan GPS aktif.';
+                            locationStatusEl.style.display = 'block';
+                            locationStatusEl.innerHTML = `<span style="color: #F44336;">${message}</span>`;
+                        }
+                        updateSubmitState();
                     },
                     options
                 );
@@ -712,6 +1020,20 @@
             
             // Mulai tracking lokasi saat load
             startLocationTracking();
+
+            function getFreshLocation() {
+                return new Promise(function(resolve, reject) {
+                    navigator.geolocation.getCurrentPosition(
+                        resolve,
+                        reject,
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        }
+                    );
+                });
+            }
 
             
             // Fungsi untuk memperbarui status absensi secara real-time
@@ -826,23 +1148,144 @@
                 openCameraModal();
             });
             
+            function setCaptureMode(mode, allowSubmit) {
+                if (!submitBtn) {
+                    return;
+                }
+
+                if (allowSubmit === false) {
+                    submitBtn.disabled = true;
+                    return;
+                }
+                updateSubmitState();
+            }
+
+            function resetCameraState() {
+                const capturedContainer = document.getElementById('capturedImageContainer');
+                const statusMessageEl = document.getElementById('statusMessage');
+                const locationStatusEl = document.getElementById('locationStatusMsg');
+
+                capturedImage = null;
+                if (capturedContainer) {
+                    capturedContainer.innerHTML = '';
+                }
+                if (statusMessageEl) {
+                    statusMessageEl.textContent = '';
+                    statusMessageEl.style.display = 'none';
+                }
+                if (locationStatusEl) {
+                    if (LOCATION_REQUIRED) {
+                        locationStatusEl.style.display = 'block';
+                        locationStatusEl.innerHTML = '<span style="color: #9E9E9E;">Menunggu Lokasi...</span>';
+                    } else {
+                        locationStatusEl.style.display = 'none';
+                        locationStatusEl.textContent = '';
+                    }
+                }
+                if (submitBtn) {
+                    submitBtn.textContent = SUBMIT_TEXT;
+                }
+                setCaptureMode('capture');
+            }
+
+            function resetCapturePreview() {
+                const capturedContainer = document.getElementById('capturedImageContainer');
+                const statusMessageEl = document.getElementById('statusMessage');
+
+                capturedImage = null;
+                if (capturedContainer) {
+                    capturedContainer.innerHTML = '';
+                }
+                if (statusMessageEl) {
+                    statusMessageEl.textContent = '';
+                    statusMessageEl.style.display = 'none';
+                }
+                if (submitBtn) {
+                    submitBtn.textContent = SUBMIT_TEXT;
+                }
+                setCaptureMode('capture');
+            }
+
+            function applyOptimisticStatus() {
+                const statusEl = document.getElementById('status-hari-ini');
+                const detailEl = document.getElementById('status-detail');
+                if (!statusEl || !detailEl) {
+                    return;
+                }
+                if (!optimisticStatus) {
+                    optimisticStatus = {
+                        status: statusEl.textContent,
+                        detail: detailEl.textContent
+                    };
+                }
+                const actionLabel = currentAction === 'masuk'
+                    ? 'Sudah Absen Masuk'
+                    : currentAction === 'pulang'
+                        ? 'Sudah Absen Pulang'
+                        : 'Sudah Absen';
+                statusEl.textContent = actionLabel;
+                detailEl.textContent = 'Menunggu konfirmasi server...';
+            }
+
+            function restoreOptimisticStatus() {
+                if (!optimisticStatus) {
+                    return;
+                }
+                const statusEl = document.getElementById('status-hari-ini');
+                const detailEl = document.getElementById('status-detail');
+                if (statusEl) {
+                    statusEl.textContent = optimisticStatus.status;
+                }
+                if (detailEl) {
+                    detailEl.textContent = optimisticStatus.detail;
+                }
+                optimisticStatus = null;
+            }
+
+            function finalizeOptimisticStatus() {
+                optimisticStatus = null;
+            }
+
             // Fungsi untuk membuka modal kamera
             function openCameraModal() {
-                document.getElementById('cameraModal').style.display = 'block';
+                const modal = document.getElementById('cameraModal');
+                if (!modal) {
+                    return;
+                }
+                lastFocusedElement = document.activeElement;
+                resetCameraState();
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+                modal.removeAttribute('inert');
+                document.documentElement.classList.add('modal-open');
+                document.body.classList.add('modal-open');
                 startCamera();
+                const closeBtn = modal.querySelector('.modal-close');
+                if (closeBtn) {
+                    closeBtn.focus();
+                }
             }
             
             // Fungsi untuk membuka kamera
             function startCamera() {
                 const video = document.getElementById('video');
-                
+                if (!video) {
+                    return;
+                }
+
+                if (currentStream) {
+                    video.srcObject = currentStream;
+                    return;
+                }
+
                 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices.getUserMedia({ 
-                        video: { 
+                    navigator.mediaDevices.getUserMedia({
+                        video: {
                             facingMode: 'user',
                             width: { ideal: 1280 },
                             height: { ideal: 720 }
-                        } 
+                        },
+                        audio: false
                     })
                     .then(function(stream) {
                         currentStream = stream;
@@ -857,83 +1300,179 @@
                 }
             }
             
-            // Tombol ambil foto
-            document.getElementById('captureBtn').addEventListener('click', function() {
-                const video = document.getElementById('video');
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                capturedImage = canvas.toDataURL('image/png');
-                
-                // Tampilkan preview foto yang diambil
-                document.getElementById('capturedImageContainer').innerHTML = 
-                    '<img src="' + capturedImage + '" class="captured-image" id="capturedImagePreview" />';
-                
-                // Cek lokasi sebelum enable tombol
-                const submitBtn = document.getElementById('submitBtn');
-                if (userLat && userLng) {
-                     // Jika akurasi masih buruk, user tetap bisa submit tapi kita warnai statusnya kuning (opsional: bisa di-block jika mau strict)
-                     // Di sini saya biarkan enable asalkan koordinat ada, agar tidak blocking user yang buru-buru.
-                     submitBtn.disabled = false;
-                } else {
-                    alert("Lokasi belum ditemukan. Tunggu sebentar...");
-                    // Tetap disabled
-                }
-            });
-            
-            // Tombol submit absensi
-            document.getElementById('submitBtn').addEventListener('click', function() {
-                if (!capturedImage) {
+            async function handleSubmitAttendance() {
+                if (SELFIE_REQUIRED && !capturedImage) {
                     alert('Silakan ambil foto terlebih dahulu!');
                     return;
                 }
 
-                if (!userLat || !userLng) {
-                    alert('Lokasi belum ditemukan. Mohon tunggu sebentar atau refresh halaman.');
+                if (!submitBtn) {
                     return;
                 }
+
+                applyOptimisticStatus();
+
+                const originalText = submitBtn.textContent;
+                submitBtn.innerHTML = '<span class="loading"></span> Memeriksa lokasi...';
+                submitBtn.disabled = true;
+
+                if (LOCATION_REQUIRED && !navigator.geolocation) {
+                    alert('Geolocation tidak didukung browser ini.');
+                    submitBtn.textContent = originalText;
+                    updateSubmitState();
+                    restoreOptimisticStatus();
+                    return;
+                }
+
+                try {
+                    if (navigator.geolocation) {
+                        const position = await getFreshLocation();
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+
+                        if (!isFiniteNumber(lat) || !isFiniteNumber(lng) || !isFiniteNumber(accuracy)) {
+                            throw new Error('Invalid location data');
+                        }
+
+                        const locationStatusEl = document.getElementById('locationStatusMsg');
+                        if (LOCATION_REQUIRED && locationStatusEl) {
+                            locationStatusEl.style.display = 'block';
+                            if (accuracy > TARGET_ACCURACY) {
+                                const accuracyText = `${Math.round(accuracy)}m`;
+                                locationStatusEl.innerHTML = `<span style="color: #FF9800;"><i class="material-icons tiny">warning</i> Akurasi ${accuracyText}, tetap lanjut submit.</span>`;
+                            } else {
+                                locationStatusEl.innerHTML = `<span style="color: #4CAF50;"><i class="material-icons tiny">check</i> Lokasi siap (${Math.round(accuracy)}m)</span>`;
+                            }
+                        }
+
+                        userLat = lat;
+                        userLng = lng;
+                        locationAccuracy = accuracy;
+                    }
+                } catch (error) {
+                    console.error('Error mendapatkan lokasi akurat:', error);
+                    if (LOCATION_REQUIRED) {
+                        const locationStatusEl = document.getElementById('locationStatusMsg');
+                        if (locationStatusEl) {
+                            locationStatusEl.style.display = 'block';
+                            locationStatusEl.innerHTML = '<span style="color: #F44336;">Gagal mendapatkan lokasi akurat. Coba lagi.</span>';
+                        }
+                        setCaptureMode('submit', false);
+                        submitBtn.textContent = originalText;
+                        restoreOptimisticStatus();
+                        return;
+                    }
+                }
                 
-                // Tampilkan pesan loading
-                const submitBtn = document.getElementById('submitBtn');
-                const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<span class="loading"></span> Mengirim...';
                 submitBtn.disabled = true;
                 
-                // Kirim data absensi
                 submitAttendance(capturedImage);
-            });
+            }
+
+            // Tombol ambil foto
+            if (captureBtn) {
+                captureBtn.addEventListener('click', function() {
+                    const video = document.getElementById('video');
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    capturedImage = canvas.toDataURL('image/png');
+
+                    // Tampilkan preview foto yang diambil
+                    document.getElementById('capturedImageContainer').innerHTML =
+                        '<img src="' + capturedImage + '" class="captured-image" id="capturedImagePreview" />';
+
+                    const isLocationReady = isFiniteNumber(userLat)
+                        && isFiniteNumber(userLng)
+                        && isFiniteNumber(locationAccuracy);
+
+                    if (LOCATION_REQUIRED && !isLocationReady) {
+                        const locationStatusEl = document.getElementById('locationStatusMsg');
+                        if (locationStatusEl) {
+                            locationStatusEl.style.display = 'block';
+                            locationStatusEl.innerHTML = `<span style="color: #FF9800;"><i class="material-icons tiny">warning</i> Menunggu akurasi lokasi <= ${TARGET_ACCURACY}m...</span>`;
+                        }
+                    }
+
+                    updateSubmitState();
+                });
+            }
+
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function() {
+                    handleSubmitAttendance();
+                });
+            }
+
+            if (retryBtn) {
+                retryBtn.addEventListener('click', function() {
+                    resetCapturePreview();
+                    startCamera();
+                });
+            }
             
             // Fungsi untuk mengirim data absensi
             function submitAttendance(imageData) {
-                // Konversi data URI ke blob
-                const byteString = atob(imageData.split(',')[1]);
-                const mimeString = imageData.split(',')[0].split(':')[1].split(';')[0];
-                const ab = new ArrayBuffer(byteString.length);
-                const ia = new Uint8Array(ab);
-                for (let i = 0; i < byteString.length; i++) {
-                    ia[i] = byteString.charCodeAt(i);
+                let file = null;
+                if (imageData) {
+                    // Konversi data URI ke blob
+                    const byteString = atob(imageData.split(',')[1]);
+                    const mimeString = imageData.split(',')[0].split(':')[1].split(';')[0];
+                    const ab = new ArrayBuffer(byteString.length);
+                    const ia = new Uint8Array(ab);
+                    for (let i = 0; i < byteString.length; i++) {
+                        ia[i] = byteString.charCodeAt(i);
+                    }
+                    const blob = new Blob([ab], { type: mimeString });
+                    file = new File([blob], `selfie_${currentAction}_${Date.now()}.png`, { type: mimeString });
+                } else if (SELFIE_REQUIRED) {
+                    const statusMessageEl = document.getElementById('statusMessage');
+                    if (statusMessageEl) {
+                        statusMessageEl.style.display = 'block';
+                        statusMessageEl.innerHTML =
+                            '<span style="color: #F44336;">Foto wajib diambil sebelum absen.</span>';
+                    }
+                    if (submitBtn) {
+                        submitBtn.textContent = SUBMIT_TEXT;
+                        updateSubmitState();
+                    }
+                    restoreOptimisticStatus();
+                    return;
                 }
-                const blob = new Blob([ab], { type: mimeString });
-                const file = new File([blob], `selfie_${currentAction}_${Date.now()}.png`, { type: mimeString });
                 
                 // Pastikan lokasi valid sebelum submit
-                if (!userLat || !userLng || typeof userLat !== 'number' || typeof userLng !== 'number') {
-                    document.getElementById('statusMessage').innerHTML =
-                        '<span style="color: #F44336;">Lokasi tidak valid. Harap tunggu hingga lokasi ditemukan.</span>';
+                if (LOCATION_REQUIRED && (!isFiniteNumber(userLat) || !isFiniteNumber(userLng))) {
+                    const statusMessageEl = document.getElementById('statusMessage');
+                    if (statusMessageEl) {
+                        statusMessageEl.style.display = 'block';
+                        statusMessageEl.innerHTML =
+                            '<span style="color: #F44336;">Lokasi tidak valid. Harap tunggu hingga lokasi ditemukan.</span>';
+                    }
 
                     // Kembalikan tombol ke keadaan semula
-                    const submitBtn = document.getElementById('submitBtn');
-                    submitBtn.innerHTML = 'Submit Absensi';
-                    submitBtn.disabled = false;
+                    if (submitBtn) {
+                        submitBtn.textContent = SUBMIT_TEXT;
+                        updateSubmitState();
+                    }
+                    restoreOptimisticStatus();
                     return;
                 }
 
                 const formData = new FormData();
-                formData.append('foto', file);
-                formData.append('lokasi', `${userLat},${userLng}`);
+                if (file) {
+                    formData.append('foto', file);
+                }
+                if (isFiniteNumber(userLat) && isFiniteNumber(userLng)) {
+                    formData.append('lokasi', `${userLat},${userLng}`);
+                }
+                if (isFiniteNumber(locationAccuracy)) {
+                    formData.append('akurasi', String(locationAccuracy));
+                }
 
                 // Tentukan URL berdasarkan action
                 const url = currentAction === 'masuk' ? '{{ route("guru.absen.masuk") }}' : '{{ route("guru.absen.pulang") }}';
@@ -942,20 +1481,36 @@
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    const contentType = response.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) {
+                        return response.json();
+                    }
+                    return response.text().then(text => {
+                        throw new Error(text || `HTTP ${response.status}`);
+                    });
+                })
                 .then(data => {
                     // Kembalikan tombol ke keadaan semula
-                    const submitBtn = document.getElementById('submitBtn');
-                    submitBtn.innerHTML = 'Submit Absensi';
-                    submitBtn.disabled = false;
+                    if (submitBtn) {
+                        submitBtn.textContent = SUBMIT_TEXT;
+                        updateSubmitState();
+                    }
                     
                     if (data.success) {
+                        finalizeOptimisticStatus();
                         // Tampilkan pesan sukses
-                        document.getElementById('statusMessage').innerHTML = 
-                            `<span style="color: #4CAF50; font-weight: bold;">${data.message}</span>`;
+                        const statusMessageEl = document.getElementById('statusMessage');
+                        if (statusMessageEl) {
+                            statusMessageEl.style.display = 'block';
+                            statusMessageEl.innerHTML =
+                                `<span style="color: #4CAF50; font-weight: bold;">${data.message}</span>`;
+                        }
                         
                         // Perbarui status dengan data terbaru dari server (delay untuk memastikan data sudah tersimpan)
                         setTimeout(updateAttendanceStatus, 1000);
@@ -965,43 +1520,82 @@
                             closeCameraModal();
                         }, 2000);
                     } else {
+                        restoreOptimisticStatus();
+                        let errorMessage = data && data.message ? data.message : 'Gagal mengirim data absensi';
+                        if (data && data.errors) {
+                            const firstError = Object.values(data.errors)[0];
+                            if (Array.isArray(firstError) && firstError.length > 0) {
+                                errorMessage = firstError[0];
+                            }
+                        }
                         // Tampilkan pesan error
-                        document.getElementById('statusMessage').innerHTML = 
-                            `<span style="color: #F44336;">Error: ${data.message}</span>`;
+                        const statusMessageEl = document.getElementById('statusMessage');
+                        if (statusMessageEl) {
+                            statusMessageEl.style.display = 'block';
+                            statusMessageEl.innerHTML =
+                                `<span style="color: #F44336;">Error: ${errorMessage}</span>`;
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     // Kembalikan tombol ke keadaan semula
-                    const submitBtn = document.getElementById('submitBtn');
-                    submitBtn.innerHTML = 'Submit Absensi';
-                    submitBtn.disabled = false;
+                    if (submitBtn) {
+                        submitBtn.textContent = SUBMIT_TEXT;
+                        updateSubmitState();
+                    }
+                    restoreOptimisticStatus();
                     
-                    document.getElementById('statusMessage').innerHTML = 
-                        '<span style="color: #F44336;">Terjadi kesalahan saat mengirim data absensi</span>';
+                    const statusMessageEl = document.getElementById('statusMessage');
+                    if (statusMessageEl) {
+                        statusMessageEl.style.display = 'block';
+                        const fallbackMessage = error && error.message
+                            ? error.message
+                            : 'Terjadi kesalahan saat mengirim data absensi';
+                        statusMessageEl.innerHTML =
+                            `<span style="color: #F44336;">${fallbackMessage}</span>`;
+                    }
                 });
             }
             
             // Fungsi untuk menutup modal kamera
-            function closeCameraModal() {
-                document.getElementById('cameraModal').style.display = 'none';
-                
-                // Hentikan stream kamera jika ada
+            function stopCamera() {
+                const video = document.getElementById('video');
                 if (currentStream) {
                     const tracks = currentStream.getTracks();
                     tracks.forEach(track => track.stop());
                     currentStream = null;
                 }
-                
-                // Reset elemen
-                document.getElementById('capturedImageContainer').innerHTML = '';
-                document.getElementById('statusMessage').innerHTML = '';
-                document.getElementById('submitBtn').disabled = true;
-                capturedImage = null;
+                if (video) {
+                    video.pause();
+                    video.srcObject = null;
+                }
+            }
+
+            function closeCameraModal() {
+                const modal = document.getElementById('cameraModal');
+                if (modal) {
+                    if (document.activeElement && modal.contains(document.activeElement)) {
+                        document.activeElement.blur();
+                    }
+                    modal.classList.remove('is-open');
+                    modal.setAttribute('aria-hidden', 'true');
+                    modal.setAttribute('inert', '');
+                }
+                document.documentElement.classList.remove('modal-open');
+                document.body.classList.remove('modal-open');
+                stopCamera();
+                resetCameraState();
+                if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                    lastFocusedElement.focus();
+                }
             }
             
             // Event listener untuk tombol close modal
-            document.querySelector('.close').addEventListener('click', closeCameraModal);
+            const closeBtn = document.querySelector('.modal-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeCameraModal);
+            }
             
             // Close modal jika klik di luar modal content
             window.addEventListener('click', function(event) {

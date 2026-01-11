@@ -391,18 +391,6 @@
                 coverTrigger: false
             });
             
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
-            }
-            
-            // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
-            
             // Fungsi untuk mengelola status notifikasi
             function attachEventListeners() {
                 // Tandai sebagai sudah dibaca

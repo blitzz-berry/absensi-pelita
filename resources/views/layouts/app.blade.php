@@ -117,13 +117,20 @@
         }
         
         .clock-display {
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 15px;
+            font-weight: 600;
             margin-right: 20px;
-            font-family: 'Courier New', monospace;
-            background: #f5f5f5;
-            padding: 5px 12px;
-            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.16), rgba(33, 150, 243, 0.06));
+            border: 1px solid rgba(25, 118, 210, 0.25);
+            color: #0f172a;
+            padding: 6px 16px;
+            border-radius: 999px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 16px rgba(25, 118, 210, 0.12);
         }
 
         /* Mobile Overlay */
@@ -186,6 +193,15 @@
                 padding-left: 10px;
             }
         }
+
+        @media (max-width: 600px) {
+            .clock-display {
+                font-size: 12px;
+                letter-spacing: 0.08em;
+                padding: 4px 10px;
+                margin-right: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -229,21 +245,60 @@
 
     @yield('scripts')
     <script>
+        function formatWibTime(date) {
+            const parts = new Intl.DateTimeFormat('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Jakarta'
+            }).formatToParts(date);
+
+            const partValue = type => {
+                const part = parts.find(item => item.type === type);
+                return part ? part.value : '00';
+            };
+
+            return `${partValue('hour')}:${partValue('minute')}`;
+        }
+
+        function formatWibDate(date) {
+            return new Intl.DateTimeFormat('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                timeZone: 'Asia/Jakarta'
+            }).format(date);
+        }
+
+        window.formatWibTime = formatWibTime;
+        window.formatWibDate = formatWibDate;
+
+        function startLiveClock() {
+            updateClock();
+
+            if (window.liveClockIntervalId) {
+                clearInterval(window.liveClockIntervalId);
+            }
+            if (window.liveClockTimeoutId) {
+                clearTimeout(window.liveClockTimeoutId);
+            }
+
+            const now = new Date();
+            const msToNextMinute = Math.max(0, (60 - now.getSeconds()) * 1000 - now.getMilliseconds());
+            window.liveClockTimeoutId = setTimeout(function() {
+                updateClock();
+                window.liveClockIntervalId = setInterval(updateClock, 60000);
+            }, msToNextMinute);
+        }
+
         // Update live clock safely for all pages
         function updateClock() {
             try {
                 const now = new Date();
-                // Format waktu sesuai dengan format yang digunakan di menu lain (24 jam, WIB)
-                const timeString = now.toLocaleTimeString('id-ID', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false,
-                    timeZone: 'Asia/Jakarta'
-                });
+                const timeString = formatWibTime(now);
                 const clockElement = document.getElementById('live-clock');
                 if (clockElement) {
-                    clockElement.textContent = timeString;
+                    clockElement.textContent = `${timeString} WIB`;
                 }
             } catch (error) {
                 console.error('Error updating clock:', error);
@@ -259,12 +314,7 @@
             // Initialize clock if element exists
             const clockElement = document.getElementById('live-clock');
             if (clockElement) {
-                updateClock();
-                // Clear any existing intervals that might be running for live-clock
-                if (window.liveClockIntervalId) {
-                    clearInterval(window.liveClockIntervalId);
-                }
-                window.liveClockIntervalId = setInterval(updateClock, 1000);
+                startLiveClock();
             }
 
             // Hamburger menu functionality
@@ -302,6 +352,10 @@
                 if (window.liveClockIntervalId) {
                     clearInterval(window.liveClockIntervalId);
                     window.liveClockIntervalId = null;
+                }
+                if (window.liveClockTimeoutId) {
+                    clearTimeout(window.liveClockTimeoutId);
+                    window.liveClockTimeoutId = null;
                 }
             });
         });

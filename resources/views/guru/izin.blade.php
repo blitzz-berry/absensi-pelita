@@ -3,6 +3,7 @@
 @section('title', 'Pengajuan Izin - Sistem Absensi Guru')
 
 @section('styles')
+    <link rel="stylesheet" href="{{ asset('css/izin-form.css') }}">
     <style>
         .dashboard-card {
             border-radius: 12px;
@@ -107,6 +108,12 @@
             display: block;
             width: 100%;
         }
+
+        .submit-btn {
+            justify-content: center;
+            padding: 12px 20px;
+            line-height: 1.2;
+        }
         
         .table-container {
             overflow-x: auto;
@@ -208,6 +215,87 @@
         .form-col {
             flex: 1;
         }
+
+        @media (max-width: 600px) {
+            .card-content {
+                padding: 20px;
+            }
+
+            .welcome-section {
+                margin-bottom: 18px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 16px;
+            }
+
+            .jenis-buttons {
+                flex-direction: column;
+            }
+
+            .jenis-display {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .table-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .activity-table thead {
+                display: none;
+            }
+
+            .activity-table,
+            .activity-table tbody,
+            .activity-table tr,
+            .activity-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .activity-table tr {
+                padding: 12px;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                background: #ffffff;
+            }
+
+            .activity-table td {
+                border: none;
+                padding: 6px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                text-align: left;
+            }
+
+            .activity-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #64748b;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+            }
+
+            .activity-table td.empty-cell {
+                display: block;
+                text-align: center;
+            }
+        }
     </style>
 @endsection
 
@@ -219,7 +307,8 @@
     @include('guru.components.topbar')
     
     <!-- Main Content -->
-    <div class="main-content">
+    <div class="main-content m-izin-page">
+        <div class="m-page">
         <div class="welcome-section">
             <h4 class="welcome-title">Pengajuan Izin/Sakit</h4>
             <p class="welcome-subtitle">Ajukan izin atau sakit dengan mengisi formulir di bawah ini</p>
@@ -227,86 +316,95 @@
         
         <div class="row">
             <div class="col s12 m8">
-                <div class="dashboard-card">
-                    <div class="card-content">
-                        <span class="card-title">Formulir Pengajuan</span>
-                        
-                        @if(session('success'))
-                            <div class="alert alert-success" style="padding: 15px; margin-bottom: 20px; background-color: #e8f5e9; border-radius: 6px; color: #2e7d32;">
-                                {{ session('success') }}
-                            </div>
-                        @endif
-                        
-                        @if($errors->any())
-                            <div class="alert alert-danger" style="padding: 15px; margin-bottom: 20px; background-color: #ffebee; border-radius: 6px; color: #c62828;">
-                                <ul style="margin: 0; padding-left: 20px;">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                        
-                        <form id="izinForm" action="{{ route('guru.izin.store') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label>Jenis Pengajuan</label>
-                                        <div style="display: flex; gap: 10px; margin-top: 8px;">
-                                            <button type="button" class="btn" id="btn-izin" style="flex: 1; background: #e3f2fd; color: #1976D2; border: 2px solid #bbdefb;" onclick="selectJenisPengajuan('izin')">
-                                                <i class="material-icons left" style="font-size: 18px;">event_note</i> Izin
-                                            </button>
-                                            <button type="button" class="btn" id="btn-sakit" style="flex: 1; background: #e3f2fd; color: #1976D2; border: 2px solid #bbdefb;" onclick="selectJenisPengajuan('sakit')">
-                                                <i class="material-icons left" style="font-size: 18px;">favorite</i> Sakit
-                                            </button>
-                                        </div>
-                                        <input type="hidden" name="jenis_pengajuan" id="jenis_pengajuan" required>
-                                        <div id="jenis-pengajuan-display" style="margin-top: 10px; padding: 10px; background-color: #f5f5f5; border-radius: 6px; display: none;">
-                                            Jenis yang dipilih: <span id="selected-jenis"></span>
-                                            <button type="button" onclick="resetJenisPengajuan()" style="margin-left: 15px; background: #ff5252; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Ubah</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="tanggal_mulai">Tanggal Mulai</label>
-                                        <input type="date" name="tanggal_mulai" id="tanggal_mulai" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="tanggal_selesai">Tanggal Selesai</label>
-                                        <input type="date" name="tanggal_selesai" id="tanggal_selesai" class="form-control" required>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="alasan">Alasan</label>
-                                <textarea name="alasan" id="alasan" class="form-control" placeholder="Jelaskan alasan pengajuan izin/sakit Anda" required></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="bukti_file">File Bukti (Opsional)</label>
-                                <div class="file-upload">
-                                    <input type="file" name="bukti_file" id="bukti_file" accept=".pdf,.jpg,.jpeg,.png">
-                                    <label for="bukti_file" class="file-upload-label">
-                                        <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">cloud_upload</i>
-                                        Pilih file bukti (PDF, JPG, PNG maks 2MB)
-                                    </label>
-                                </div>
-                                <div id="file-name" class="file-name" style="display: none;"></div>
-                            </div>
-                            
-                            <button type="button" class="btn btn-primary btn-block" onclick="submitForm()" id="submitBtn">
-                                <i class="material-icons left">send</i> Ajukan Izin/Sakit
-                            </button>
-                        </form>
+                @if(session('success'))
+                    <div class="alert alert-success" style="padding: 15px; margin-bottom: 20px; background-color: #e8f5e9; border-radius: 6px; color: #2e7d32;">
+                        {{ session('success') }}
                     </div>
+                @endif
+                
+                @if($errors->any())
+                    <div class="alert alert-danger" style="padding: 15px; margin-bottom: 20px; background-color: #ffebee; border-radius: 6px; color: #c62828;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="m-card">
+                    <form id="izinForm" action="{{ route('guru.izin.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="m-seg" role="tablist" aria-label="Jenis Pengajuan">
+                            <button type="button" class="m-seg-btn active" data-jenis="izin" aria-selected="true">IZIN</button>
+                            <button type="button" class="m-seg-btn" data-jenis="sakit" aria-selected="false">SAKIT</button>
+                        </div>
+                        <input type="hidden" name="jenis_pengajuan" id="jenis_pengajuan" required value="izin">
+
+                        <div class="m-field">
+                            <label class="m-label" for="tanggal_mulai_display">Tanggal Mulai</label>
+                            <div class="m-input-wrap">
+                                <input type="text" id="tanggal_mulai_display" class="m-input m-input-display" placeholder="dd/mm/yyyy" readonly>
+                                <input type="date" name="tanggal_mulai" id="tanggal_mulai" class="m-date-input" required>
+                                <span class="m-trailing-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                                        <line x1="8" y1="3" x2="8" y2="7"></line>
+                                        <line x1="16" y1="3" x2="16" y2="7"></line>
+                                        <line x1="3" y1="11" x2="21" y2="11"></line>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="m-field">
+                            <label class="m-label" for="tanggal_selesai_display">Tanggal Selesai</label>
+                            <div class="m-input-wrap">
+                                <input type="text" id="tanggal_selesai_display" class="m-input m-input-display" placeholder="dd/mm/yyyy" readonly>
+                                <input type="date" name="tanggal_selesai" id="tanggal_selesai" class="m-date-input" required>
+                                <span class="m-trailing-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                                        <line x1="8" y1="3" x2="8" y2="7"></line>
+                                        <line x1="16" y1="3" x2="16" y2="7"></line>
+                                        <line x1="3" y1="11" x2="21" y2="11"></line>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="m-field">
+                            <label class="m-label" for="alasan" id="alasan-label">Alasan Izin</label>
+                            <textarea name="alasan" id="alasan" class="m-input m-textarea" placeholder="Jelaskan alasan pengajuan" required></textarea>
+                            <p class="m-helper m-izin-only" id="alasan-helper-izin">Gunakan alasan singkat dan jelas.</p>
+                            <p class="m-helper m-sakit-only m-hidden" id="alasan-helper-sakit">Tambahkan info singkat kondisi sakit jika perlu.</p>
+                        </div>
+
+                        <div class="m-field">
+                            <label class="m-label" for="bukti_file">File Bukti (Opsional)</label>
+                            <div class="file-upload">
+                                <input type="file" name="bukti_file" id="bukti_file" accept=".pdf,.jpg,.jpeg,.png">
+                                <label for="bukti_file" class="file-upload-label">
+                                    <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">cloud_upload</i>
+                                    Pilih file bukti (PDF, JPG, PNG maks 2MB)
+                                </label>
+                            </div>
+                            <div id="file-name" class="file-name" style="display: none;"></div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary btn-block submit-btn m-submit" onclick="submitForm()" id="submitBtn">
+                            <i class="material-icons left">send</i> Ajukan
+                        </button>
+                    </form>
+                </div>
+
+                <div class="m-card m-guide-card">
+                    <div class="m-guide-title">Panduan Pengajuan</div>
+                    <ul class="m-guide">
+                        <li class="m-guide-dot">Izin: untuk keperluan pribadi, keluarga, atau alasan penting lainnya.</li>
+                        <li class="m-guide-chevron">Sakit: sertakan surat keterangan dokter jika diminta.</li>
+                        <li class="m-guide-chevron">Pengajuan akan diproses oleh admin.</li>
+                    </ul>
                 </div>
             </div>
             
@@ -335,16 +433,6 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div style="margin-top: 20px;">
-                            <h6 style="font-weight: 600; color: #212121; margin-bottom: 10px;">Panduan Pengajuan</h6>
-                            <ul style="padding-left: 20px; color: #757575;">
-                                <li style="margin-bottom: 8px;">Izin: untuk keperluan pribadi, keluarga, atau alasan penting lainnya</li>
-                                <li style="margin-bottom: 8px;">Sakit: sertakan surat keterangan dokter jika diminta</li>
-                                <li style="margin-bottom: 8px;">Pengajuan akan diproses oleh admin</li>
-                                <li>Ajukan minimal 1 hari sebelum tanggal izin dimulai</li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -369,10 +457,10 @@
                                 <tbody>
                                     @forelse($pengajuanIzin as $izin)
                                     <tr>
-                                        <td>{{ \Carbon\Carbon::parse($izin->created_at)->format('d M Y') }}</td>
-                                        <td>{{ ucfirst($izin->jenis_pengajuan) }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($izin->tanggal_mulai)->format('d M') }} - {{ \Carbon\Carbon::parse($izin->tanggal_selesai)->format('d M Y') }}</td>
-                                        <td>
+                                        <td data-label="Tanggal">{{ \Carbon\Carbon::parse($izin->created_at)->format('d M Y') }}</td>
+                                        <td data-label="Jenis">{{ ucfirst($izin->jenis_pengajuan) }}</td>
+                                        <td data-label="Periode">{{ \Carbon\Carbon::parse($izin->tanggal_mulai)->format('d M') }} - {{ \Carbon\Carbon::parse($izin->tanggal_selesai)->format('d M Y') }}</td>
+                                        <td data-label="Status">
                                             <span class="status-badge 
                                                 @if($izin->status === 'diajukan') status-diajukan 
                                                 @elseif($izin->status === 'disetujui') status-disetujui 
@@ -380,7 +468,7 @@
                                                 {{ ucfirst($izin->status) }}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td data-label="Catatan">
                                             @if($izin->catatan_admin)
                                                 {{ Str::limit($izin->catatan_admin, 50) }}
                                             @else
@@ -390,7 +478,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="5" style="text-align: center; padding: 20px; color: #9e9e9e;">
+                                        <td colspan="5" class="empty-cell" style="text-align: center; padding: 20px; color: #9e9e9e;">
                                             Belum ada pengajuan izin/sakit
                                         </td>
                                     </tr>
@@ -402,6 +490,7 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
 @endsection
 
@@ -412,18 +501,6 @@
             var instances = M.Dropdown.init(elems, {
                 coverTrigger: false
             });
-            
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
-            }
-            
-            // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
             
             // Show selected file name
             document.getElementById('bukti_file').addEventListener('change', function() {
@@ -437,53 +514,79 @@
                     fileNameElement.style.display = 'none';
                 }
             });
-            
 
-            
+            const jenisInput = document.getElementById('jenis_pengajuan');
+            const segButtons = document.querySelectorAll('.m-seg-btn');
+            const alasanLabel = document.getElementById('alasan-label');
+            const helperIzin = document.getElementById('alasan-helper-izin');
+            const helperSakit = document.getElementById('alasan-helper-sakit');
 
-            
-            // Tambahkan validasi min tanggal_mulai dan tanggal_selesai
-            document.getElementById('tanggal_mulai').addEventListener('change', function() {
-                document.getElementById('tanggal_selesai').min = this.value;
+            function applyJenis(jenis) {
+                segButtons.forEach(button => {
+                    const isActive = button.dataset.jenis === jenis;
+                    button.classList.toggle('active', isActive);
+                    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+                if (jenisInput) {
+                    jenisInput.value = jenis;
+                }
+                if (alasanLabel) {
+                    alasanLabel.textContent = jenis === 'sakit' ? 'Alasan Sakit' : 'Alasan Izin';
+                }
+                if (helperIzin && helperSakit) {
+                    helperIzin.classList.toggle('m-hidden', jenis === 'sakit');
+                    helperSakit.classList.toggle('m-hidden', jenis !== 'sakit');
+                }
+            }
+
+            segButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    applyJenis(this.dataset.jenis);
+                });
             });
+
+            applyJenis(jenisInput?.value || 'izin');
+
+            function formatDateDisplay(value) {
+                if (!value) {
+                    return '';
+                }
+                const parts = value.split('-');
+                if (parts.length !== 3) {
+                    return '';
+                }
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+
+            function syncDateDisplay(dateInput, displayInput) {
+                if (!dateInput || !displayInput) {
+                    return;
+                }
+                displayInput.value = formatDateDisplay(dateInput.value);
+            }
+
+            const tanggalMulaiInput = document.getElementById('tanggal_mulai');
+            const tanggalMulaiDisplay = document.getElementById('tanggal_mulai_display');
+            const tanggalSelesaiInput = document.getElementById('tanggal_selesai');
+            const tanggalSelesaiDisplay = document.getElementById('tanggal_selesai_display');
+
+            if (tanggalMulaiInput) {
+                tanggalMulaiInput.addEventListener('change', function() {
+                    if (tanggalSelesaiInput) {
+                        tanggalSelesaiInput.min = this.value;
+                    }
+                    syncDateDisplay(tanggalMulaiInput, tanggalMulaiDisplay);
+                });
+                syncDateDisplay(tanggalMulaiInput, tanggalMulaiDisplay);
+            }
+
+            if (tanggalSelesaiInput) {
+                tanggalSelesaiInput.addEventListener('change', function() {
+                    syncDateDisplay(tanggalSelesaiInput, tanggalSelesaiDisplay);
+                });
+                syncDateDisplay(tanggalSelesaiInput, tanggalSelesaiDisplay);
+            }
         });
-        
-        // Fungsi untuk memilih jenis pengajuan
-        function selectJenisPengajuan(jenis) {
-            // Hapus kelas aktif dari kedua tombol
-            document.getElementById('btn-izin').style.borderColor = jenis === 'izin' ? '#1976D2' : '#bbdefb';
-            document.getElementById('btn-izin').style.backgroundColor = jenis === 'izin' ? '#1976D2' : '#e3f2fd';
-            document.getElementById('btn-izin').style.color = jenis === 'izin' ? 'white' : '#1976D2';
-            
-            document.getElementById('btn-sakit').style.borderColor = jenis === 'sakit' ? '#1976D2' : '#bbdefb';
-            document.getElementById('btn-sakit').style.backgroundColor = jenis === 'sakit' ? '#1976D2' : '#e3f2fd';
-            document.getElementById('btn-sakit').style.color = jenis === 'sakit' ? 'white' : '#1976D2';
-            
-            // Simpan nilai ke input hidden
-            document.getElementById('jenis_pengajuan').value = jenis;
-            
-            // Tampilkan jenis yang dipilih
-            document.getElementById('selected-jenis').textContent = jenis.charAt(0).toUpperCase() + jenis.slice(1);
-            document.getElementById('jenis-pengajuan-display').style.display = 'block';
-        }
-        
-        // Fungsi untuk mereset pilihan jenis pengajuan
-        function resetJenisPengajuan() {
-            // Reset warna tombol
-            document.getElementById('btn-izin').style.borderColor = '#bbdefb';
-            document.getElementById('btn-izin').style.backgroundColor = '#e3f2fd';
-            document.getElementById('btn-izin').style.color = '#1976D2';
-            
-            document.getElementById('btn-sakit').style.borderColor = '#bbdefb';
-            document.getElementById('btn-sakit').style.backgroundColor = '#e3f2fd';
-            document.getElementById('btn-sakit').style.color = '#1976D2';
-            
-            // Reset input hidden
-            document.getElementById('jenis_pengajuan').value = '';
-            
-            // Sembunyikan display
-            document.getElementById('jenis-pengajuan-display').style.display = 'none';
-        }
         
         // Fungsi untuk submit form secara manual - didefinisikan di luar event listener agar bisa diakses oleh onclick
         function submitForm() {

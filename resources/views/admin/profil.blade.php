@@ -346,7 +346,7 @@
     
     <!-- Top Bar -->
     <div class="topbar">
-        <div class="clock-display" id="live-clock">00:00:00</div>
+        <div class="clock-display" id="live-clock">00:00 WIB</div>
         <div class="profile-menu dropdown-trigger" data-target="dropdown-profile">
             <img src="{{ $user->foto_profile ? asset($user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5' }}" 
                  alt="Profile" class="circle" width="40" height="40">
@@ -478,17 +478,6 @@
                 coverTrigger: false
             });
             
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
-            }
-            
-            // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
         });
         
         function showEditForm() {

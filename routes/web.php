@@ -78,7 +78,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/guru/absen/masuk', [App\Http\Controllers\GuruAbsensiController::class, 'absenMasuk'])->name('guru.absen.masuk');
         Route::post('/guru/absen/pulang', [App\Http\Controllers\GuruAbsensiController::class, 'absenPulang'])->name('guru.absen.pulang');
         Route::get('/guru/attendance-status', [App\Http\Controllers\GuruAbsensiController::class, 'getAttendanceStatus'])->name('guru.attendance.status');
-        Route::get('/guru/absensi-harian', [App\Http\Controllers\GuruAbsensiController::class, 'absensiHarian'])->name('guru.absensi.harian');
         Route::get('/guru/riwayat-kehadiran', [App\Http\Controllers\GuruAbsensiController::class, 'riwayatKehadiran'])->name('guru.riwayat.kehadiran');
         Route::get('/guru/lokasi-saya', [App\Http\Controllers\GuruAbsensiController::class, 'lokasiSaya'])->name('guru.lokasi.saya');
         Route::get('/guru/izin', [App\Http\Controllers\GuruAbsensiController::class, 'izin'])->name('guru.izin');

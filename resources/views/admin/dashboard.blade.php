@@ -83,13 +83,13 @@
         .main-content {
             margin-top: 60px;
             margin-left: 260px;
-            padding: 30px;
+            padding: 24px;
             transition: margin-left 0.3s ease;
         }
         
         .dashboard-card {
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             background: #fff;
             overflow: hidden;
         }
@@ -112,7 +112,7 @@
         }
         
         .welcome-section {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         .welcome-title {
@@ -127,13 +127,13 @@
         }
         
         .card-content {
-            padding: 30px;
+            padding: 22px;
         }
         
         .card-title {
             font-weight: 600;
             color: #212121;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             position: relative;
         }
         
@@ -150,17 +150,17 @@
         
         .summary-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
         }
         
         .summary-card {
             background: white;
-            padding: 24px;
+            padding: 18px;
             border-radius: 12px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
             border-left: 4px solid #1976D2;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -176,14 +176,14 @@
         .summary-card.total { border-left-color: #2196F3; }
         
         .summary-value {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             margin-bottom: 5px;
         }
         
         .summary-label {
             color: #757575;
-            font-size: 14px;
+            font-size: 13px;
         }
         
         .hadir .summary-value { color: #4CAF50; }
@@ -224,6 +224,15 @@
             background-size: 30px 30px;
         }
         
+        .chart-wrap {
+            height: 220px;
+        }
+
+        .chart-wrap canvas {
+            width: 100%;
+            height: 100%;
+        }
+
         .table-container {
             overflow-x: auto;
             border-radius: 8px;
@@ -245,7 +254,7 @@
         }
         
         .activity-table th, .activity-table td {
-            padding: 16px;
+            padding: 12px;
             text-align: left;
             border-bottom: 1px solid #e0e0e0;
         }
@@ -273,6 +282,32 @@
             
             .topbar {
                 left: 70px;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .summary-cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .summary-card {
+                padding: 14px;
+            }
+
+            .summary-value {
+                font-size: 20px;
+            }
+
+            .summary-label {
+                font-size: 12px;
+            }
+
+            .chart-wrap {
+                height: 200px;
             }
         }
     </style>
@@ -324,7 +359,7 @@
                 <div class="card dashboard-card">
                     <div class="card-content">
                         <span class="card-title">Kehadiran Minggu Ini</span>
-                        <div>
+                        <div class="chart-wrap">
                             <canvas id="attendanceChart" width="400" height="200"></canvas>
                         </div>
                     </div>
@@ -336,7 +371,7 @@
                 <div class="card dashboard-card">
                     <div class="card-content">
                         <span class="card-title">Persentase Kehadiran</span>
-                        <div>
+                        <div class="chart-wrap">
                             <canvas id="percentageChart" width="400" height="200"></canvas>
                         </div>
                     </div>
@@ -395,18 +430,6 @@
             var instances = M.Dropdown.init(elems, {
                 coverTrigger: false
             });
-            
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
-            }
-            
-            // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
             
             // Chart data from backend
             const kehadiranMingguIni = @json($kehadiranMingguIni);

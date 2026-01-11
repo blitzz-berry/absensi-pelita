@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Absensi;
 use App\Models\Setting;
+use App\Models\SystemSetting;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -31,12 +32,18 @@ class GuruAbsensiController extends Controller
             ->orderBy('tanggal', 'desc')
             ->limit(4)
             ->get();
+
+        $systemSettings = [
+            'lokasi_wajib' => filter_var(SystemSetting::get('lokasi_wajib', true), FILTER_VALIDATE_BOOLEAN),
+            'selfie_wajib' => filter_var(SystemSetting::get('selfie_wajib', true), FILTER_VALIDATE_BOOLEAN),
+        ];
         
         return view('guru.dashboard', [
             'user' => $user,
             'absensi_hari_ini' => $absensi_hari_ini,
             'riwayat_absensi' => $riwayat_absensi,
-            'waktu_sekarang' => $waktu_sekarang
+            'waktu_sekarang' => $waktu_sekarang,
+            'system_settings' => $systemSettings,
         ]);
     }
     
@@ -72,14 +79,25 @@ class GuruAbsensiController extends Controller
             
             $user = Auth::user();
             
+            $lokasiWajib = filter_var(SystemSetting::get('lokasi_wajib', true), FILTER_VALIDATE_BOOLEAN);
+            $selfieWajib = filter_var(SystemSetting::get('selfie_wajib', true), FILTER_VALIDATE_BOOLEAN);
+
             // Validasi input
             $request->validate([
-                'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-                'lokasi' => 'required|string',
+                'foto' => ($selfieWajib ? 'required' : 'nullable') . '|image|mimes:jpeg,png,jpg|max:2048',
+                'lokasi' => ($lokasiWajib ? 'required' : 'nullable') . '|string',
+                'akurasi' => 'nullable|numeric|min:0|max:10000',
             ]);
             
             // Ambil setting waktu absen
             $setting = Setting::first();
+            if ($lokasiWajib && !$setting) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengaturan lokasi absensi belum tersedia.'
+                ], 422);
+            }
             $waktu_sekarang = Carbon::now('Asia/Jakarta');
             
             // Cek apakah sudah absen masuk hari ini
@@ -95,6 +113,21 @@ class GuruAbsensiController extends Controller
                 ], 400);
             }
             
+            // Validasi lokasi terhadap radius sekolah sebelum upload foto
+            $lokasiMasuk = $request->filled('lokasi') ? $request->lokasi : null;
+            if ($lokasiWajib && $lokasiMasuk) {
+                $lokasiCheck = $this->validateLokasiDalamRadius($lokasiMasuk, $setting);
+                if (!$lokasiCheck['ok']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => $lokasiCheck['message'],
+                        'distance' => $lokasiCheck['distance'],
+                        'radius' => $lokasiCheck['radius'],
+                    ], 422);
+                }
+            }
+
             // Proses upload foto dengan validasi lengkap
             $foto_path = null;
             if ($request->hasFile('foto')) {
@@ -142,7 +175,7 @@ class GuruAbsensiController extends Controller
                 [
                     'jam_masuk' => $waktu_absen,
                     'status' => $status,
-                    'lokasi_masuk' => $request->lokasi,
+                    'lokasi_masuk' => $lokasiMasuk,
                     'foto_selfie_masuk' => $foto_path,
                 ]
             );
@@ -188,6 +221,9 @@ class GuruAbsensiController extends Controller
 
             $user = Auth::user();
 
+            $lokasiWajib = filter_var(SystemSetting::get('lokasi_wajib', true), FILTER_VALIDATE_BOOLEAN);
+            $selfieWajib = filter_var(SystemSetting::get('selfie_wajib', true), FILTER_VALIDATE_BOOLEAN);
+
             // Log input untuk debugging
             \Log::info('Absen Pulang Request Data:', [
                 'user_id' => $user->id,
@@ -200,8 +236,9 @@ class GuruAbsensiController extends Controller
 
             // Validasi input
             $request->validate([
-                'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-                'lokasi' => 'required|string',
+                'foto' => ($selfieWajib ? 'required' : 'nullable') . '|image|mimes:jpeg,png,jpg|max:2048',
+                'lokasi' => ($lokasiWajib ? 'required' : 'nullable') . '|string',
+                'akurasi' => 'nullable|numeric|min:0|max:10000',
             ]);
             
             $waktu_sekarang = Carbon::now('Asia/Jakarta');
@@ -227,6 +264,30 @@ class GuruAbsensiController extends Controller
                 ], 400);
             }
             
+            $setting = Setting::first();
+            if ($lokasiWajib && !$setting) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengaturan lokasi absensi belum tersedia.'
+                ], 422);
+            }
+
+            // Validasi lokasi terhadap radius sekolah sebelum upload foto
+            $lokasiPulang = $request->filled('lokasi') ? $request->lokasi : null;
+            if ($lokasiWajib && $lokasiPulang) {
+                $lokasiCheck = $this->validateLokasiDalamRadius($lokasiPulang, $setting);
+                if (!$lokasiCheck['ok']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => $lokasiCheck['message'],
+                        'distance' => $lokasiCheck['distance'],
+                        'radius' => $lokasiCheck['radius'],
+                    ], 422);
+                }
+            }
+
             // Proses upload foto dengan validasi lengkap
             $foto_path = null;
             if ($request->hasFile('foto')) {
@@ -257,7 +318,7 @@ class GuruAbsensiController extends Controller
             // Update data absensi
             $absensi_hari_ini->update([
                 'jam_pulang' => $waktu_sekarang->toTimeString(),
-                'lokasi_pulang' => $request->lokasi,
+                'lokasi_pulang' => $lokasiPulang,
                 'foto_selfie_pulang' => $foto_path,
             ]);
             
@@ -358,34 +419,96 @@ class GuruAbsensiController extends Controller
             ]);
         }
     }
-    
-    public function absensiHarian()
+
+    private function validateLokasiDalamRadius(string $lokasi, Setting $setting): array
     {
-        $user = Auth::user();
-        if ($user->role !== 'guru') {
-            abort(403, 'Unauthorized');
+        $parsedLokasi = $this->parseLokasiString($lokasi);
+        if (!$parsedLokasi) {
+            return [
+                'ok' => false,
+                'message' => 'Format lokasi tidak valid.',
+                'distance' => null,
+                'radius' => null,
+            ];
         }
-        
-        // Ambil data absensi 7 hari terakhir
-        $waktu_sekarang = Carbon::now('Asia/Jakarta');
-        $tanggal_mulai = $waktu_sekarang->copy()->subDays(6); // 7 hari termasuk hari ini
-        
-        $riwayat_absensi = Absensi::where('user_id', $user->id)
-            ->whereBetween('tanggal', [$tanggal_mulai->toDateString(), $waktu_sekarang->toDateString()])
-            ->orderBy('tanggal', 'desc')
-            ->get();
-        
-        // Ambil data absensi hari ini
-        $absensi_hari_ini = Absensi::where('user_id', $user->id)
-            ->whereDate('tanggal', $waktu_sekarang->toDateString())
-            ->first();
-        
-        return view('guru.absensi-harian', [
-            'user' => $user,
-            'absensi_hari_ini' => $absensi_hari_ini,
-            'riwayat_absensi' => $riwayat_absensi,
-            'waktu_sekarang' => $waktu_sekarang
-        ]);
+
+        $schoolLat = filter_var($setting->lokasi_absen_lat, FILTER_VALIDATE_FLOAT);
+        $schoolLng = filter_var($setting->lokasi_absen_lng, FILTER_VALIDATE_FLOAT);
+        if ($schoolLat === false || $schoolLng === false || !is_finite($schoolLat) || !is_finite($schoolLng)) {
+            return [
+                'ok' => false,
+                'message' => 'Lokasi sekolah belum dikonfigurasi.',
+                'distance' => null,
+                'radius' => null,
+            ];
+        }
+
+        $radius = filter_var($setting->radius_lokasi, FILTER_VALIDATE_FLOAT);
+        if ($radius === false || !is_finite($radius) || $radius <= 0) {
+            return [
+                'ok' => false,
+                'message' => 'Radius lokasi absensi belum dikonfigurasi.',
+                'distance' => null,
+                'radius' => null,
+            ];
+        }
+
+        $distance = $this->calculateDistanceMeters(
+            $parsedLokasi['lat'],
+            $parsedLokasi['lng'],
+            (float) $schoolLat,
+            (float) $schoolLng
+        );
+
+        if ($distance > (float) $radius) {
+            return [
+                'ok' => false,
+                'message' => 'Lokasi di luar radius absensi.',
+                'distance' => round($distance, 2),
+                'radius' => (float) $radius,
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'message' => 'ok',
+            'distance' => round($distance, 2),
+            'radius' => (float) $radius,
+        ];
+    }
+
+    private function parseLokasiString(string $lokasi): ?array
+    {
+        $parts = array_map('trim', explode(',', $lokasi));
+        if (count($parts) !== 2) {
+            return null;
+        }
+
+        $lat = filter_var($parts[0], FILTER_VALIDATE_FLOAT);
+        $lng = filter_var($parts[1], FILTER_VALIDATE_FLOAT);
+
+        if ($lat === false || $lng === false || !is_finite($lat) || !is_finite($lng)) {
+            return null;
+        }
+
+        return [
+            'lat' => (float) $lat,
+            'lng' => (float) $lng,
+        ];
+    }
+
+    private function calculateDistanceMeters(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371000;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2)
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2))
+            * sin($dLng / 2) * sin($dLng / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
     }
     
     public function riwayatKehadiran()

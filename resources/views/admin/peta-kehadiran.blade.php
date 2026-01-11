@@ -654,6 +654,18 @@
                     }
 
                     // Add markers to the map for each teacher
+                    const coordinateTracker = new Map();
+                    const getCoordinateKey = (lat, lng) => `${lat.toFixed(5)},${lng.toFixed(5)}`;
+                    const getJitteredLatLng = (lat, lng, index) => {
+                        if (index === 0) {
+                            return [lat, lng];
+                        }
+                        const angle = (index * 45) * (Math.PI / 180);
+                        const ring = Math.ceil(index / 8);
+                        const offset = 0.00005 * ring;
+                        return [lat + offset * Math.cos(angle), lng + offset * Math.sin(angle)];
+                    };
+
                     data.lokasi_guru.forEach(location => {
                         // Validasi koordinat sebelum menambahkan marker
                         if (!location.lat || !location.lng ||
@@ -663,6 +675,11 @@
                             console.warn('Invalid coordinates found:', location);
                             return; // Lewati lokasi ini jika koordinat tidak valid
                         }
+
+                        const coordinateKey = getCoordinateKey(location.lat, location.lng);
+                        const duplicateIndex = coordinateTracker.get(coordinateKey) || 0;
+                        coordinateTracker.set(coordinateKey, duplicateIndex + 1);
+                        const [displayLat, displayLng] = getJitteredLatLng(location.lat, location.lng, duplicateIndex);
 
                         // Create custom marker icon based on status
                         let iconColor, popupClass;
@@ -709,7 +726,7 @@
                             '</div>' +
                             '</div>';
 
-                        L.marker([location.lat, location.lng], {icon: markerIcon})
+                        L.marker([displayLat, displayLng], {icon: markerIcon})
                             .addTo(markersLayer)
                             .bindPopup(popupContent);
                     });

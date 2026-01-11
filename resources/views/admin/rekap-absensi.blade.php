@@ -83,13 +83,13 @@
         .main-content {
             margin-top: 60px;
             margin-left: 260px;
-            padding: 30px;
+            padding: 24px;
             transition: margin-left 0.3s ease;
         }
         
         .dashboard-card {
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
             background: #fff;
             overflow: hidden;
         }
@@ -129,13 +129,13 @@
         }
         
         .card-content {
-            padding: 30px;
+            padding: 24px;
         }
         
         .card-title {
             font-weight: 600;
             color: #212121;
-            margin-bottom: 25px;
+            margin-bottom: 18px;
             position: relative;
         }
         
@@ -151,16 +151,15 @@
         }
         
         .filter-section {
-            margin-bottom: 25px;
-            padding: 25px;
-            background: white;
-            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 14px;
             display: flex;
             flex-wrap: wrap;
-            align-items: end;
-            gap: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border: 1px solid #e0e0e0;
+            align-items: flex-end;
+            gap: 16px;
+            box-shadow: inset 0 0 0 1px #e2e8f0;
         }
         
         .input-with-icon {
@@ -201,11 +200,11 @@
         }
         
         .btn-filter {
-            background: linear-gradient(135deg, #FF9800, #F57C00);
+            background: linear-gradient(135deg, #1976D2, #2196F3);
             color: white;
-            padding: 12px 24px;
+            padding: 10px 18px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             text-decoration: none;
             font-weight: 500;
@@ -214,14 +213,15 @@
             gap: 8px;
             transition: all 0.3s ease;
             font-size: 14px;
-            height: 45px;
-            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+            height: 42px;
+            box-shadow: 0 6px 12px rgba(25, 118, 210, 0.2);
+            white-space: nowrap;
         }
         
         .btn-filter:hover {
-            background: linear-gradient(135deg, #F57C00, #EF6C00);
+            background: linear-gradient(135deg, #1565C0, #1976D2);
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
+            box-shadow: 0 8px 16px rgba(25, 118, 210, 0.25);
         }
         
         .filter-group {
@@ -271,12 +271,14 @@
         }
         
         .filter-control {
-            padding: 10px 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
+            padding: 10px 14px;
+            border: 1px solid #d8dee6;
+            border-radius: 10px;
             font-size: 14px;
             outline: none;
             transition: all 0.3s ease;
+            height: 42px;
+            background: #ffffff;
         }
         
         .filter-control:focus {
@@ -285,18 +287,6 @@
         }
         
         .btn-filter {
-            background: linear-gradient(135deg, #1976D2, #2196F3);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
             align-self: flex-end;
         }
         
@@ -317,11 +307,11 @@
         }
         
         .btn-export {
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            background: linear-gradient(135deg, #22c55e, #16a34a);
             color: white;
-            padding: 12px 20px;
+            padding: 10px 18px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             text-decoration: none;
             font-weight: 500;
@@ -330,13 +320,15 @@
             gap: 8px;
             transition: all 0.3s ease;
             font-size: 14px;
-            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3);
+            height: 42px;
+            box-shadow: 0 6px 12px rgba(34, 197, 94, 0.2);
+            white-space: nowrap;
         }
         
         .btn-export:hover {
-            background: linear-gradient(135deg, #43A047, #1B5E20);
+            background: linear-gradient(135deg, #16a34a, #15803d);
             transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 8px 16px rgba(34, 197, 94, 0.25);
         }
         
         table {
@@ -420,17 +412,17 @@
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 16px;
+            margin-bottom: 22px;
         }
         
         .summary-card {
             background: white;
-            padding: 24px;
-            border-radius: 12px;
+            padding: 18px;
+            border-radius: 14px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border-left: 4px solid #1976D2;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+            border-left: 3px solid #1976D2;
         }
         
         .summary-card.hadir { border-left-color: #4CAF50; }
@@ -440,14 +432,14 @@
         .summary-card.alpha { border-left-color: #9E9E9E; }
         
         .summary-value {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             margin-bottom: 5px;
         }
         
         .summary-label {
             color: #757575;
-            font-size: 14px;
+            font-size: 13px;
         }
         
         .hadir .summary-value { color: #4CAF50; }
@@ -458,8 +450,8 @@
         
         .table-container {
             overflow-x: auto;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
         }
         
         .rekap-table {
@@ -468,8 +460,8 @@
         }
         
         .rekap-table th {
-            background: linear-gradient(to bottom, #f5f7fa, #e8eaf6);
-            color: #37474f;
+            background: #f1f5f9;
+            color: #475569;
             font-weight: 600;
             text-transform: uppercase;
             font-size: 12px;
@@ -477,7 +469,7 @@
         }
         
         .rekap-table td, .rekap-table th {
-            padding: 16px;
+            padding: 12px;
             text-align: center;
             border-bottom: 1px solid #e0e0e0;
         }
@@ -622,6 +614,66 @@
             box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2); /* Fokus ring */
         }
 
+        .rekap-filter-bar {
+            background: #f8fafc;
+        }
+
+        .rekap-filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            flex: 1 1 280px;
+        }
+
+        .rekap-filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1 1 150px;
+        }
+
+        .rekap-filter-group label {
+            font-weight: 600;
+            color: #424242;
+            font-size: 13px;
+        }
+
+        .rekap-export-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            flex: 1 1 320px;
+            justify-content: space-between;
+        }
+
+        .rekap-export-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .rekap-export-forms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .rekap-export-forms form {
+            margin: 0;
+        }
+
+        .btn-export-gaji {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            box-shadow: 0 6px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-export-gaji:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            box-shadow: 0 8px 16px rgba(139, 92, 246, 0.25);
+        }
+
         @media (max-width: 768px) {
             .filter-section {
                 flex-direction: column;
@@ -681,25 +733,26 @@
         <div class="card dashboard-card">
             <div class="card-content">
                 <!-- Combined Filter Section for Daily Recap and Monthly Export -->
-                <div class="filter-section" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: end; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #e0e0e0;">
+                <div class="filter-section rekap-filter-bar">
                     <!-- Form Filter Harian -->
-                    <form method="GET" action="{{ route('admin.rekap-absensi') }}" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: end; flex: 1 1 280px;">
-                        <div class="filter-subgroup" style="display: flex; flex-direction: column; flex: 1 1 150px;">
-                            <label for="tanggal" style="font-size: 13px; font-weight: 500; color: #424242;">Tanggal Harian</label>
-                            <input type="date" name="tanggal" id="tanggal" class="filter-control" value="{{ $tanggal ?? date('Y-m-d') }}" style="padding: 8px 10px; font-size: 13px;">
+                    <form method="GET" action="{{ route('admin.rekap-absensi') }}" class="rekap-filter-form">
+                        <div class="filter-subgroup rekap-filter-group">
+                            <label for="tanggal">Tanggal Harian</label>
+                            <input type="date" name="tanggal" id="tanggal" class="filter-control" value="{{ $tanggal ?? date('Y-m-d') }}">
                         </div>
 
-                        <button type="submit" class="btn-export" style="margin-bottom: 2px; white-space: nowrap; padding: 10px 16px; font-size: 13px;">
+                        <button type="submit" class="btn-filter">
                             <i class="material-icons" style="font-size: 18px;">autorenew</i> Tampilkan
                         </button>
                     </form>
 
                     <!-- Container untuk Input Bulan/Tahun dan Tombol Export (Rekap & Gaji) -->
-                    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: end; flex: 1 1 320px;">
+                    <div class="rekap-export-wrap">
                         <!-- Input Bulan dan Tahun (digunakan bersama untuk kedua export) -->
-                        <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-                            <div class="filter-subgroup" style="display: flex; flex-direction: column; flex: 1 1 100px;">
-                                <select name="bulan_export" id="bulan_export" class="filter-control" style="padding: 8px 10px; font-size: 13px;" onchange="updateFormAction()">
+                        <div class="rekap-export-group">
+                            <div class="filter-subgroup rekap-filter-group">
+                                <label for="bulan_export">Bulan</label>
+                                <select name="bulan_export" id="bulan_export" class="filter-control" onchange="updateFormAction()">
                                     <option value="01" {{ date('m') == '01' ? 'selected' : '' }}>Jan</option>
                                     <option value="02" {{ date('m') == '02' ? 'selected' : '' }}>Feb</option>
                                     <option value="03" {{ date('m') == '03' ? 'selected' : '' }}>Mar</option>
@@ -714,8 +767,9 @@
                                     <option value="12" {{ date('m') == '12' ? 'selected' : '' }}>Des</option>
                                 </select>
                             </div>
-                            <div class="filter-subgroup" style="display: flex; flex-direction: column; flex: 1 1 100px;">
-                                <select name="tahun_export" id="tahun_export" class="filter-control" style="padding: 8px 10px; font-size: 13px;" onchange="updateFormAction()">
+                            <div class="filter-subgroup rekap-filter-group">
+                                <label for="tahun_export">Tahun</label>
+                                <select name="tahun_export" id="tahun_export" class="filter-control" onchange="updateFormAction()">
                                     <?php
                                     $currentYear = date('Y');
                                     $startYear = $currentYear - 5;
@@ -730,23 +784,23 @@
                         </div>
 
                         <!-- Tombol Export Rekap dan Gaji -->
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <div class="rekap-export-forms">
                             <!-- Form Export Rekap (dengan action yang diupdate oleh JS) -->
-                            <form method="POST" action="{{ route('admin.rekap-absensi.export.excel.global') }}" id="export-rekap-form" style="margin: 0;">
+                            <form method="POST" action="{{ route('admin.rekap-absensi.export.excel.global') }}" id="export-rekap-form">
                                 @csrf
                                 <input type="hidden" name="bulan" id="bulan_rekap" value="{{ date('m') }}">
                                 <input type="hidden" name="tahun" id="tahun_rekap" value="{{ date('Y') }}">
-                                <button type="submit" class="btn-export" id="btn-export-rekap" style="margin-bottom: 2px; padding: 10px 16px; font-size: 13px;">
+                                <button type="submit" class="btn-export" id="btn-export-rekap">
                                     <i class="material-icons" style="font-size: 18px;">file_download</i> Export Rekap
                                 </button>
                             </form>
 
                             <!-- Form Export Gaji (dengan action yang diupdate oleh JS) -->
-                            <form method="POST" action="{{ route('admin.rekap-absensi.export.gaji.excel.global') }}" id="export-gaji-form" style="margin: 0;">
+                            <form method="POST" action="{{ route('admin.rekap-absensi.export.gaji.excel.global') }}" id="export-gaji-form">
                                 @csrf
                                 <input type="hidden" name="bulan" id="bulan_gaji" value="{{ date('m') }}">
                                 <input type="hidden" name="tahun" id="tahun_gaji" value="{{ date('Y') }}">
-                                <button type="submit" class="btn-export" id="btn-export-gaji" style="margin-bottom: 2px; padding: 10px 16px; font-size: 13px; background: linear-gradient(135deg, #9C27B0, #7B1FA2);">
+                                <button type="submit" class="btn-export btn-export-gaji" id="btn-export-gaji">
                                     <i class="material-icons" style="font-size: 18px;">file_download</i> Export Gaji
                                 </button>
                             </form>
@@ -901,19 +955,6 @@
                 coverTrigger: false
             });
             
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
-            }
-            
-            // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
-            
-
             // Initial update for clock is already handled above
             // No more auto-submit on change for date input, manual submit via button
 

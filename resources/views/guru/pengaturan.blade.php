@@ -176,6 +176,34 @@
             word-wrap: break-word; /* Mencegah overflow teks panjang */
         }
 
+        .password-input {
+            position: relative;
+        }
+
+        .password-input input {
+            padding-right: 42px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #757575;
+            padding: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-toggle:focus {
+            outline: none;
+            color: #1976D2;
+        }
+
         .input-group input:focus,
         .input-group select:focus,
         .input-group textarea:focus {
@@ -523,17 +551,32 @@
                             
                             <div class="input-group">
                                 <label for="old_password">Password Lama</label>
-                                <input type="password" name="current_password" id="old_password" required autocomplete="current-password">
+                                <div class="password-input">
+                                    <input type="password" name="current_password" id="old_password" required autocomplete="current-password">
+                                    <button type="button" class="password-toggle" data-target="old_password" aria-label="Tampilkan password">
+                                        <i class="material-icons">visibility</i>
+                                    </button>
+                                </div>
                             </div>
                             
                             <div class="input-group">
                                 <label for="new_password">Password Baru</label>
-                                <input type="password" name="new_password" id="new_password" required autocomplete="new-password">
+                                <div class="password-input">
+                                    <input type="password" name="new_password" id="new_password" required autocomplete="new-password">
+                                    <button type="button" class="password-toggle" data-target="new_password" aria-label="Tampilkan password">
+                                        <i class="material-icons">visibility</i>
+                                    </button>
+                                </div>
                             </div>
                             
                             <div class="input-group">
                                 <label for="confirm_password">Konfirmasi Password Baru</label>
-                                <input type="password" name="new_password_confirmation" id="confirm_password" required autocomplete="new-password">
+                                <div class="password-input">
+                                    <input type="password" name="new_password_confirmation" id="confirm_password" required autocomplete="new-password">
+                                    <button type="button" class="password-toggle" data-target="confirm_password" aria-label="Tampilkan password">
+                                        <i class="material-icons">visibility</i>
+                                    </button>
+                                </div>
                             </div>
                             
                             <div class="d-flex justify-content-center gap-2 mt-3">
@@ -561,18 +604,6 @@
             var instances = M.Dropdown.init(elems, {
                 coverTrigger: false
             });
-            
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                
-                document.getElementById('live-clock').textContent = timeString;
-            }
-            
-            // Update clock immediately and then every second
-            updateClock();
-            setInterval(updateClock, 1000);
             
             // Function to show edit profile form
             function showEditProfileForm() {
@@ -611,6 +642,29 @@
                 }
                 reader.readAsDataURL(event.target.files[0]);
             }
+
+            const passwordToggles = document.querySelectorAll('.password-toggle');
+            passwordToggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const targetInput = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+
+                    if (!targetInput || !icon) {
+                        return;
+                    }
+
+                    if (targetInput.type === 'password') {
+                        targetInput.type = 'text';
+                        icon.textContent = 'visibility_off';
+                        this.setAttribute('aria-label', 'Sembunyikan password');
+                    } else {
+                        targetInput.type = 'password';
+                        icon.textContent = 'visibility';
+                        this.setAttribute('aria-label', 'Tampilkan password');
+                    }
+                });
+            });
             
             // Function to reset profile form and image preview when cancel is clicked
             function resetProfileForm() {

@@ -261,16 +261,6 @@
                 console.warn('Materialize init skipped:', e);
             }
 
-            // Update live clock
-            function updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                document.getElementById('live-clock').textContent = timeString;
-            }
-
-            updateClock();
-            setInterval(updateClock, 1000);
-
             // Variabel Global
             let map = null;
             let marker = null;

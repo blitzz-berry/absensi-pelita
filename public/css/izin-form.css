@@ -1,0 +1,186 @@
+.m-izin-page {
+    background: #F5F7FB;
+    min-height: calc(100vh - 60px);
+}
+
+.m-page {
+    padding: 16px;
+}
+
+.m-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.m-seg {
+    background: #EEF2F7;
+    border-radius: 16px;
+    padding: 6px;
+    display: flex;
+    gap: 6px;
+}
+
+.m-seg button {
+    flex: 1;
+    height: 46px;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: transparent;
+    color: #6B7280;
+    cursor: pointer;
+}
+
+.m-seg button.active {
+    background: #fff;
+    color: #2F80ED;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.10);
+}
+
+.m-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 14px 0 8px;
+    color: #111827;
+    display: block;
+}
+
+.m-field {
+    margin-bottom: 12px;
+}
+
+.m-input-wrap {
+    position: relative;
+}
+
+.m-input {
+    width: 100%;
+    height: 52px;
+    border: 1px solid #D7DCE3;
+    border-radius: 14px;
+    padding: 0 48px 0 14px;
+    font-size: 16px;
+    color: #111827;
+    background: #fff;
+}
+
+.m-input:focus {
+    outline: none;
+}
+
+.m-input-wrap:focus-within .m-input-display {
+    border-color: #2F80ED;
+    box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.15);
+}
+
+.m-input-display {
+    pointer-events: none;
+}
+
+.m-date-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.m-date-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+}
+
+.m-trailing-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    opacity: 0.85;
+    pointer-events: none;
+    color: #374151;
+}
+
+.m-textarea {
+    min-height: 120px;
+    padding: 12px 14px;
+    resize: vertical;
+}
+
+.m-helper {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.m-hidden {
+    display: none;
+}
+
+.m-guide-card {
+    margin-top: 14px;
+}
+
+.m-guide-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: #111827;
+}
+
+.m-guide {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.m-guide li {
+    color: #6B7280;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 8px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.m-guide-dot::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin-top: 6px;
+    border-radius: 999px;
+    background: #9CA3AF;
+    flex-shrink: 0;
+}
+
+.m-guide-chevron::before {
+    content: ">";
+    margin-top: 1px;
+    color: #9CA3AF;
+    font-size: 12px;
+    line-height: 1.2;
+    flex-shrink: 0;
+}
+
+.m-submit {
+    margin-top: 10px;
+    height: 52px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .m-page {
+        padding: 16px;
+    }
+
+    .m-card {
+        padding: 16px;
+    }
+}

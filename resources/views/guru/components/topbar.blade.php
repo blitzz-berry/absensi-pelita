@@ -4,7 +4,7 @@
         <span></span>
         <span></span>
     </div>
-    <div class="clock-display" id="live-clock">00:00:00</div>
+    <div class="clock-display" id="live-clock">00:00 WIB</div>
     @php
         $user = auth()->user();
         $fotoProfileUrl = $user->foto_profile ? asset('storage/'.$user->foto_profile) : 'https://ui-avatars.com/api/?name='.urlencode($user->nama).'&color=1976D2&background=F5F5F5';
