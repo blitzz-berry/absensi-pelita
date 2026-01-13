@@ -194,6 +194,42 @@
             }
         }
 
+        @media (max-width: 767px) {
+            html {
+                overflow-x: hidden;
+            }
+
+            body.admin-layout {
+                overflow-x: hidden;
+            }
+
+            body.admin-layout .sidebar {
+                transform: translateX(-110%);
+                opacity: 0;
+                pointer-events: none;
+                box-shadow: none;
+            }
+
+            body.admin-layout .sidebar.active {
+                transform: translateX(0);
+                opacity: 1;
+                pointer-events: auto;
+                box-shadow: 3px 0 15px rgba(0,0,0,0.08);
+            }
+
+            body.admin-layout .topbar {
+                left: 0;
+            }
+
+            body.admin-layout .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+        }
+
         @media (max-width: 600px) {
             .clock-display {
                 font-size: 12px;
@@ -204,7 +240,10 @@
         }
     </style>
 </head>
-<body>
+@php
+    $isAdminLayout = request()->segment(1) === 'admin';
+@endphp
+<body class="{{ $isAdminLayout ? 'admin-layout' : '' }}">
     @yield('content')
 
     <!-- Mobile overlay -->

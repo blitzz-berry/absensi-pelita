@@ -10,6 +10,11 @@
             margin: 0;
             padding: 0;
         }
+
+        html,
+        body {
+            overflow-x: hidden;
+        }
         
         .sidebar {
             position: fixed;
@@ -307,77 +312,186 @@
             transform: none;
             box-shadow: none;
         }
+
+        #admin-notifications-page .notification-detail-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        #admin-notifications-page {
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 992px) {
+            #admin-notifications-page .topbar {
+                left: 0;
+                padding: 0 12px;
+            }
+
+            #admin-notifications-page .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 16px;
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
+            }
+        }
+
+        @media (max-width: 767px) {
+            #admin-notifications-page .card-content {
+                padding: 16px;
+            }
+
+            #admin-notifications-page .notification-actions {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            #admin-notifications-page .action-buttons {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            #admin-notifications-page .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            #admin-notifications-page .notification-list {
+                gap: 12px;
+            }
+
+            #admin-notifications-page .notification-item {
+                padding: 14px;
+                border-radius: 12px;
+            }
+
+            #admin-notifications-page .notification-header {
+                flex-direction: column;
+                gap: 6px;
+                align-items: flex-start;
+            }
+
+            #admin-notifications-page .notification-title {
+                font-size: 15px;
+            }
+
+            #admin-notifications-page .notification-time {
+                font-size: 11px;
+            }
+
+            #admin-notifications-page .notification-message {
+                font-size: 13px;
+            }
+
+            #admin-notifications-page .notification-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            #admin-notifications-page .notification-actions-menu {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            #admin-notifications-page .notification-action-btn {
+                font-size: 12px;
+                padding: 6px 8px;
+                border-radius: 8px;
+                background: #f1f5f9;
+                color: #475569;
+            }
+
+            #admin-notifications-page .notification-action-btn i {
+                font-size: 16px;
+            }
+
+            #admin-notifications-page .notification-footer .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
     </style>
 @endsection
 
 @section('content')
-    <!-- Sidebar -->
-    @include('admin.components.sidebar')
-    
-    <!-- Top Bar -->
-    @include('admin.components.topbar', ['currentUser' => Auth::user()])
-    
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="welcome-section">
-            <h4 class="welcome-title">Pusat Notifikasi</h4>
-            <p class="welcome-subtitle">Lihat dan kelola semua notifikasi Anda</p>
-        </div>
+    <div id="admin-notifications-page">
+        <!-- Sidebar -->
+        @include('admin.components.sidebar')
         
-        <div class="card dashboard-card">
-            <div class="card-content">
-                <div class="notification-actions">
-                    <h5>Daftar Notifikasi</h5>
-                    <div class="action-buttons">
-                        <button id="markAllAsRead" class="btn btn-primary">
-                            <i class="material-icons">check_circle</i> Tandai semua sudah dibaca
-                        </button>
-                        <button id="deleteAll" class="btn btn-danger">
-                            <i class="material-icons">delete</i> Hapus semua
-                        </button>
+        <!-- Top Bar -->
+        @include('admin.components.topbar', ['currentUser' => Auth::user()])
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="welcome-section">
+                <h4 class="welcome-title">Pusat Notifikasi</h4>
+                <p class="welcome-subtitle">Lihat dan kelola semua notifikasi Anda</p>
+            </div>
+            
+            <div class="card dashboard-card">
+                <div class="card-content">
+                    <div class="notification-actions">
+                        <h5>Daftar Notifikasi</h5>
+                        <div class="action-buttons">
+                            <button id="markAllAsRead" class="btn btn-primary">
+                                <i class="material-icons">check_circle</i> Tandai semua sudah dibaca
+                            </button>
+                            <button id="deleteAll" class="btn btn-danger">
+                                <i class="material-icons">delete</i> Hapus semua
+                            </button>
+                        </div>
                     </div>
-                </div>
-                
-                @if($notifications->count() > 0)
-                    <div class="notification-list" id="notificationList">
-                        @foreach($notifications as $notification)
-                            <div class="notification-item {{ is_null($notification->read_at) ? 'unread' : 'read' }}" data-id="{{ $notification->id }}">
-                                <div class="notification-header">
-                                    <h6 class="notification-title">{{ $notification->title }}</h6>
-                                    <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
-                                </div>
-                                <p class="notification-message">{{ $notification->message }}</p>
-                                <div class="notification-footer">
-                                    <div class="notification-actions-menu">
-                                        @if(is_null($notification->read_at))
-                                            <button class="notification-action-btn mark-as-read" data-id="{{ $notification->id }}">
-                                                <i class="material-icons">check</i> Tandai sudah dibaca
-                                            </button>
-                                        @else
-                                            <button class="notification-action-btn mark-as-unread" data-id="{{ $notification->id }}">
-                                                <i class="material-icons">markunread</i> Tandai belum dibaca
-                                            </button>
-                                        @endif
-                                        <button class="notification-action-btn delete-notification" data-id="{{ $notification->id }}">
-                                            <i class="material-icons">delete</i> Hapus
-                                        </button>
+                    
+                    @if($notifications->count() > 0)
+                        <div class="notification-list" id="notificationList">
+                            @foreach($notifications as $notification)
+                                <div class="notification-item {{ is_null($notification->read_at) ? 'unread' : 'read' }}" data-id="{{ $notification->id }}">
+                                    <div class="notification-header">
+                                        <h6 class="notification-title">{{ $notification->title }}</h6>
+                                        <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
                                     </div>
-                                    @if($notification->link && $notification->link !== '#')
-                                        <a href="{{ $notification->link }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                                    <p class="notification-message">{{ $notification->message }}</p>
+                                    <div class="notification-footer">
+                                        <div class="notification-actions-menu">
+                                            @if(is_null($notification->read_at))
+                                                <button class="notification-action-btn mark-as-read" data-id="{{ $notification->id }}">
+                                                    <i class="material-icons">check</i> Tandai sudah dibaca
+                                                </button>
+                                            @else
+                                                <button class="notification-action-btn mark-as-unread" data-id="{{ $notification->id }}">
+                                                    <i class="material-icons">markunread</i> Tandai belum dibaca
+                                                </button>
+                                            @endif
+                                            <button class="notification-action-btn delete-notification" data-id="{{ $notification->id }}">
+                                                <i class="material-icons">delete</i> Hapus
+                                            </button>
+                                        </div>
+                                        @if($notification->link && $notification->link !== '#')
+                                        <a href="{{ $notification->link }}" class="btn btn-primary notification-detail-btn">
                                             <i class="material-icons">open_in_new</i> Lihat Detail
                                         </a>
-                                    @endif
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="empty-state">
-                        <i class="material-icons">notifications_off</i>
-                        <h5>Tidak ada notifikasi</h5>
-                        <p>Anda belum memiliki notifikasi apapun saat ini</p>
-                    </div>
-                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <i class="material-icons">notifications_off</i>
+                            <h5>Tidak ada notifikasi</h5>
+                            <p>Anda belum memiliki notifikasi apapun saat ini</p>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
