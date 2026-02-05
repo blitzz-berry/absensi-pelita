@@ -22,5 +22,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Izin::observe(IzinObserver::class);
+
+        $this->app->resolving(\Illuminate\Console\Command::class, function ($command, $app) {
+            $command->setLaravel($app);
+        });
     }
 }

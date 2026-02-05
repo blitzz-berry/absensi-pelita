@@ -4,12 +4,15 @@ namespace App\Exports;
 
 use App\Models\RekapAbsensi;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class RekapAbsensiExport implements FromCollection, WithHeadings, WithMapping, WithStyles
+class RekapAbsensiExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnFormatting, ShouldAutoSize
 {
     protected $bulan;
     protected $tahun;
@@ -71,6 +74,14 @@ class RekapAbsensiExport implements FromCollection, WithHeadings, WithMapping, W
     {
         return [
             1 => ['font' => ['bold' => true]] // Header row
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'K' => '#,##0',
+            'L' => '#,##0',
         ];
     }
 }

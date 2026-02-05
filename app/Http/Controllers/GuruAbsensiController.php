@@ -620,21 +620,21 @@ class GuruAbsensiController extends Controller
     
     public function storeIzin(Request $request)
     {
+        $user = Auth::user();
+        if ($user->role !== 'guru') {
+            abort(403, 'Unauthorized');
+        }
+
+        $validated = $request->validate([
+            'jenis_pengajuan' => 'required|in:izin,sakit',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'alasan' => 'required|string|max:500',
+            'bukti_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
         try {
             DB::beginTransaction();
-            
-            $user = Auth::user();
-            if ($user->role !== 'guru') {
-                abort(403, 'Unauthorized');
-            }
-            
-            $request->validate([
-                'jenis_pengajuan' => 'required|in:izin,sakit',
-                'tanggal_mulai' => 'required|date',
-                'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-                'alasan' => 'required|string|max:500',
-                'bukti_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            ]);
             
             // Handle file upload if exists
             $fileName = null;
@@ -666,10 +666,10 @@ class GuruAbsensiController extends Controller
             // Create the izin record
             $izin = \App\Models\Izin::create([
                 'user_id' => $user->id,
-                'jenis' => $request->jenis_pengajuan,
-                'tanggal_mulai' => $request->tanggal_mulai,
-                'tanggal_selesai' => $request->tanggal_selesai,
-                'alasan' => $request->alasan,
+                'jenis' => $validated['jenis_pengajuan'],
+                'tanggal_mulai' => $validated['tanggal_mulai'],
+                'tanggal_selesai' => $validated['tanggal_selesai'],
+                'alasan' => $validated['alasan'],
                 'bukti_file' => $fileName,
                 'status' => 'diajukan', // Default status
             ]);

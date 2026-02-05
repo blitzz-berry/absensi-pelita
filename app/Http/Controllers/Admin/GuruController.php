@@ -397,6 +397,31 @@ class GuruController extends Controller
         // For non-AJAX requests, redirect back
         return redirect()->back()->with('success', 'Status pengajuan izin berhasil diperbarui');
     }
+
+    /**
+     * Tampilkan bukti izin dari storage tanpa symlink public.
+     */
+    public function showIzinBukti(string $filename)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+
+        $safeName = basename($filename);
+        $path = 'izin_files/' . $safeName;
+
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $fullPath = Storage::disk('public')->path($path);
+        $mime = Storage::disk('public')->mimeType($path) ?? 'application/octet-stream';
+
+        return response()->file($fullPath, [
+            'Content-Type' => $mime,
+        ]);
+    }
     
     /**
      * Update status di tabel absensi sesuai tanggal izin
@@ -576,14 +601,16 @@ class GuruController extends Controller
      */
     private function generateRekapForMonth($bulan, $tahun)
     {
+        $rangeStart = \Carbon\Carbon::create($tahun, $bulan, 15, 0, 0, 0, 'Asia/Jakarta');
+        $rangeEnd = $rangeStart->copy()->addMonthNoOverflow()->setDay(16)->endOfDay();
+
         // Ambil semua guru
         $guru = User::where('role', 'guru')->get();
         
         foreach ($guru as $g) {
             // Hitung jumlah kehadiran per status untuk bulan dan tahun tertentu
             $absensi = \App\Models\Absensi::where('user_id', $g->id)
-                ->whereMonth('tanggal', $bulan)
-                ->whereYear('tanggal', $tahun)
+                ->whereBetween('tanggal', [$rangeStart->toDateString(), $rangeEnd->toDateString()])
                 ->get();
             
             // Hitung jumlah per status
@@ -637,52 +664,7 @@ class GuruController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
         
-        // Ambil semua guru
-        $guru = User::where('role', 'guru')->get();
-        
-        foreach ($guru as $g) {
-            // Hitung jumlah kehadiran per status untuk bulan dan tahun tertentu
-            $absensi = \App\Models\Absensi::where('user_id', $g->id)
-                ->whereMonth('tanggal', $bulan)
-                ->whereYear('tanggal', $tahun)
-                ->get();
-            
-            // Hitung jumlah per status
-            $jumlah_hadir = $absensi->where('status', 'hadir')->count();
-            $jumlah_terlambat = $absensi->where('status', 'terlambat')->count();
-            $jumlah_izin = $absensi->where('status', 'izin')->count();
-            $jumlah_sakit = $absensi->where('status', 'sakit')->count();
-            $jumlah_alpha = $absensi->where('status', 'alpha')->count();
-            
-            // Cek apakah sudah ada rekap untuk bulan dan tahun ini
-            $rekap = \App\Models\RekapAbsensi::where('user_id', $g->id)
-                ->where('bulan', $bulan)
-                ->where('tahun', $tahun)
-                ->first();
-            
-            if ($rekap) {
-                // Update jika sudah ada
-                $rekap->update([
-                    'jumlah_hadir' => $jumlah_hadir,
-                    'jumlah_terlambat' => $jumlah_terlambat,
-                    'jumlah_izin' => $jumlah_izin,
-                    'jumlah_sakit' => $jumlah_sakit,
-                    'jumlah_alpha' => $jumlah_alpha,
-                ]);
-            } else {
-                // Buat baru jika belum ada
-                \App\Models\RekapAbsensi::create([
-                    'user_id' => $g->id,
-                    'bulan' => $bulan,
-                    'tahun' => $tahun,
-                    'jumlah_hadir' => $jumlah_hadir,
-                    'jumlah_terlambat' => $jumlah_terlambat,
-                    'jumlah_izin' => $jumlah_izin,
-                    'jumlah_sakit' => $jumlah_sakit,
-                    'jumlah_alpha' => $jumlah_alpha,
-                ]);
-            }
-        }
+        $this->generateRekapForMonth($bulan, $tahun);
         
         return redirect()->route('admin.rekap-absensi')->with('success', 'Rekap absensi berhasil dibuat');
     }
@@ -707,54 +689,7 @@ class GuruController extends Controller
             return redirect()->back()->with('error', 'Excel export package not installed. Please run: composer require maatwebsite/excel');
         }
 
-        // --- Generate Recap if not exists for the selected month/year ---
-        // Ambil semua guru
-        $guru = User::where('role', 'guru')->get();
-
-        foreach ($guru as $g) {
-            // Hitung jumlah kehadiran per status untuk bulan dan tahun tertentu
-            $absensi = \App\Models\Absensi::where('user_id', $g->id)
-                ->whereMonth('tanggal', $bulan)
-                ->whereYear('tanggal', $tahun)
-                ->get();
-
-            // Hitung jumlah per status
-            $jumlah_hadir = $absensi->where('status', 'hadir')->count();
-            $jumlah_terlambat = $absensi->where('status', 'terlambat')->count();
-            $jumlah_izin = $absensi->where('status', 'izin')->count();
-            $jumlah_sakit = $absensi->where('status', 'sakit')->count();
-            $jumlah_alpha = $absensi->where('status', 'alpha')->count();
-
-            // Cek apakah sudah ada rekap untuk bulan dan tahun ini
-            $rekap = \App\Models\RekapAbsensi::where('user_id', $g->id)
-                ->where('bulan', $bulan)
-                ->where('tahun', $tahun)
-                ->first();
-
-            if ($rekap) {
-                // Update jika sudah ada
-                $rekap->update([
-                    'jumlah_hadir' => $jumlah_hadir,
-                    'jumlah_terlambat' => $jumlah_terlambat,
-                    'jumlah_izin' => $jumlah_izin,
-                    'jumlah_sakit' => $jumlah_sakit,
-                    'jumlah_alpha' => $jumlah_alpha,
-                ]);
-            } else {
-                // Buat baru jika belum ada
-                \App\Models\RekapAbsensi::create([
-                    'user_id' => $g->id,
-                    'bulan' => $bulan,
-                    'tahun' => $tahun,
-                    'jumlah_hadir' => $jumlah_hadir,
-                    'jumlah_terlambat' => $jumlah_terlambat,
-                    'jumlah_izin' => $jumlah_izin,
-                    'jumlah_sakit' => $jumlah_sakit,
-                    'jumlah_alpha' => $jumlah_alpha,
-                ]);
-            }
-        }
-        // --- End of Generate Recap ---
+        $this->generateRekapForMonth($bulan, $tahun);
 
         // Use Excel facade to download
         return \Maatwebsite\Excel\Facades\Excel::download(
@@ -783,54 +718,7 @@ class GuruController extends Controller
             return redirect()->back()->with('error', 'Excel export package not installed. Please run: composer require maatwebsite/excel');
         }
 
-        // --- Generate Recap if not exists for the selected month/year (same logic as exportExcelGlobal) ---
-        // Ambil semua guru
-        $guru = User::where('role', 'guru')->get();
-
-        foreach ($guru as $g) {
-            // Hitung jumlah kehadiran per status untuk bulan dan tahun tertentu
-            $absensi = \App\Models\Absensi::where('user_id', $g->id)
-                ->whereMonth('tanggal', $bulan)
-                ->whereYear('tanggal', $tahun)
-                ->get();
-
-            // Hitung jumlah per status
-            $jumlah_hadir = $absensi->where('status', 'hadir')->count();
-            $jumlah_terlambat = $absensi->where('status', 'terlambat')->count();
-            $jumlah_izin = $absensi->where('status', 'izin')->count();
-            $jumlah_sakit = $absensi->where('status', 'sakit')->count();
-            $jumlah_alpha = $absensi->where('status', 'alpha')->count();
-
-            // Cek apakah sudah ada rekap untuk bulan dan tahun ini
-            $rekap = \App\Models\RekapAbsensi::where('user_id', $g->id)
-                ->where('bulan', $bulan)
-                ->where('tahun', $tahun)
-                ->first();
-
-            if ($rekap) {
-                // Update jika sudah ada
-                $rekap->update([
-                    'jumlah_hadir' => $jumlah_hadir,
-                    'jumlah_terlambat' => $jumlah_terlambat,
-                    'jumlah_izin' => $jumlah_izin,
-                    'jumlah_sakit' => $jumlah_sakit,
-                    'jumlah_alpha' => $jumlah_alpha,
-                ]);
-            } else {
-                // Buat baru jika belum ada
-                \App\Models\RekapAbsensi::create([
-                    'user_id' => $g->id,
-                    'bulan' => $bulan,
-                    'tahun' => $tahun,
-                    'jumlah_hadir' => $jumlah_hadir,
-                    'jumlah_terlambat' => $jumlah_terlambat,
-                    'jumlah_izin' => $jumlah_izin,
-                    'jumlah_sakit' => $jumlah_sakit,
-                    'jumlah_alpha' => $jumlah_alpha,
-                ]);
-            }
-        }
-        // --- End of Generate Recap ---
+        $this->generateRekapForMonth($bulan, $tahun);
 
         // Use Excel facade to download using the new export class
         return \Maatwebsite\Excel\Facades\Excel::download(
@@ -936,10 +824,10 @@ class GuruController extends Controller
 
         $tanggal = $request->tanggal ?? date('Y-m-d');
         $status = $request->status ?? null; // Filter berdasarkan status kehadiran
+        $scope = $request->get('scope', 'tanggal');
 
         // Ambil data absensi dengan lokasi untuk tanggal tertentu
         $query = \App\Models\Absensi::with('user:id,nama,gelar,jabatan')
-            ->where('tanggal', $tanggal)
             ->whereHas('user', function ($q) {
                 $q->where('role', 'guru');
             })
@@ -957,12 +845,23 @@ class GuruController extends Controller
                     ->orWhereNotNull('jam_pulang');
             });
 
+        if ($scope !== 'all') {
+            $query->where('tanggal', $tanggal);
+        }
+
         // Tambahkan filter status jika disediakan
         if ($status) {
             $query->where('status', $status);
         }
 
-        $absensi = $query->get();
+        $absensi = $query
+            ->orderBy('tanggal', 'desc')
+            ->orderByRaw('COALESCE(jam_pulang, jam_masuk) DESC')
+            ->get();
+
+        if ($scope === 'all') {
+            $absensi = $absensi->groupBy('user_id')->map->first();
+        }
 
         // Format data untuk peta
         $lokasiGuru = [];
@@ -1024,7 +923,7 @@ class GuruController extends Controller
 
         return response()->json([
             'lokasi_guru' => $lokasiGuru,
-            'tanggal' => $tanggal,
+            'tanggal' => $scope === 'all' ? null : $tanggal,
             'jumlah_total' => count($lokasiGuru)
         ]);
     }

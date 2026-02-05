@@ -1,163 +1,229 @@
-
-Oke, berikut versi **prompt lengkap yang sudah diubah agar pakai database MySQL** (bukan Supabase), tapi tetap mempertahankan desain, fitur, dan struktur sistemnya 👇
-
----
-
-## 🧱 **Prompt Desain & Pengembangan Sistem**
-
-> “Create a **responsive web dashboard interface** for a **Teacher Attendance Management System** using **Material Design** style.
-> The design should be structured for a **Laravel-based web app that connects to a MySQL database**.
->
-> ### 💠 Login Page
->
-> * Centered login card on a blue gradient background
-> * School logo at the top
-> * Input fields: Nomor ID (GRU-001), Password
-> * Primary button: ‘Masuk’
-> * Secondary link: ‘Lupa kata sandi?’
->
-> ### 📊 Dashboard (Guru)
->
-> * Left sidebar navigation (icons + labels): Dashboard, Absensi Harian, Riwayat Kehadiran, Lokasi Saya, Izin/Sakit, Pengaturan
-> * Top bar with live clock and profile menu
-> * Cards section:
->
->   * Tanggal & Jam Sekarang
->   * Status Kehadiran Hari Ini
-> * Two main action buttons:
->
->   * 🟢 Absen Masuk
->   * 🔴 Absen Pulang
-> * Below buttons: camera preview area for selfie capture
-> * Mini map showing teacher location (Google Maps style)
->
-> ### 🧑‍💼 Dashboard (Admin)
->
-> * Sidebar with admin menu:
->
->   * Data Guru, Rekap Absensi, Peta Kehadiran, Pengajuan Izin, Notifikasi, Pengaturan
-> * Statistic cards row (4 cards):
->
->   * Total Guru, Hadir Hari Ini, Terlambat, Izin/Sakit
-> * Middle section:
->
->   * Left: Bar chart (Weekly attendance)
->   * Right: Pie chart (Attendance percentage)
-> * Below: Real-time map (Google Maps style) showing teacher pins (green/red)
-> * Bottom: Activity log table with columns: Waktu, Nama, Aktivitas
->
-> ### 📅 Rekap Absensi
->
-> * Dropdown filters (Month, Year, Teacher)
-> * Data table of daily attendance
-> * Buttons for “Download PDF” and “Download Excel”
->
-> ### 🩺 Izin & Sakit Form
->
-> * Input fields: Jenis Pengajuan, Tanggal Mulai, Tanggal Selesai, Alasan, Upload File
-> * Submit button
->
-> ### ⚙️ Pengaturan Akun
->
-> * Profile section with photo upload, email, phone number
-> * Change password form
-> * Toggle dark mode switch
->
-> ### 🎨 Style & Colors
->
-> * Color palette: Blue (#1976D2), White (#FFFFFF), Light Gray (#F5F5F5)
-> * Buttons with Material ripple effect
-> * Font: **Roboto / Poppins**
-> * Rounded corners (radius 12–16px), soft shadows, clean spacing
-> * Icon style: outlined Material Icons
->
-> The UI should feel **intuitive, modern, and suitable for school administrative use**.”
+Pakai prompt ini di Codex (VSCode) biar dia **ngubah UI Laravel kamu + implement Livewire** supaya tampilannya **mirip banget** kayak mockup di gambar (guru & admin, card, bottom-nav, dsb).
 
 ---
 
-## 📘 **(3) Deskripsi Sistem untuk Dokumen Proposal / RAB / ERD**
+## PROMPT UNTUK CODEX (COPY–PASTE)
 
-### 🏫 **Judul:**
+Kamu adalah senior Laravel + Livewire engineer dan UI implementer. Tugasmu: refactor tampilan project Laravel-ku agar UI/UX-nya mengikuti desain mobile-modern seperti aplikasi absensi pada mockup berikut (tanpa aku kirim gambar). Kerjakan sampai runnable.
 
-**Perancangan Sistem Informasi Absensi Guru Berbasis Web dengan Laravel dan MySQL**
+### 0) Target & aturan
 
----
-
-### 💡 **Deskripsi Umum:**
-
-Sistem ini dirancang untuk membantu sekolah dalam mencatat, memantau, dan mengelola absensi guru secara **digital, real-time, dan aman**.
-Menggunakan **Laravel 11** sebagai backend dan **MySQL** sebagai database utama, sistem ini menyediakan antarmuka modern berbasis **Material Design** agar mudah digunakan oleh guru dan admin.
-
----
-
-### ⚙️ **Teknologi yang Digunakan:**
-
-| Komponen          | Teknologi                                |
-| ----------------- | ---------------------------------------- |
-| Backend Framework | Laravel 11 (PHP 8.3)                     |
-| Database          | MySQL (Local / Remote)                   |
-| Frontend          | Blade Template + TailwindCSS + Alpine.js |
-| Real-time         | Laravel Echo + Pusher                    |
-| Authentikasi      | Laravel Breeze (Native Auth)             |
-| Grafik            | Chart.js / ApexCharts                    |
-| Peta Lokasi       | Google Maps API                          |
-| File Export       | Laravel Excel + DomPDF                   |
-| Storage           | Local Storage / Cloudinary (untuk foto)  |
+* Tech: Laravel (existing project) + **Livewire v3** (wajib dipakai untuk page/komponen utama).
+* Styling: gunakan **Tailwind CSS** (via Vite). Kalau project belum pakai Tailwind, install & konfigurasi.
+* Interaksi ringan (dropdown, modal, tab, sticky nav) boleh pakai **Alpine.js**.
+* Layout harus **mobile-first**, tapi tetap rapi di desktop (centered container).
+* Buat struktur komponen rapi (reusable cards, badges, bottom nav, topbar).
+* Jangan merusak logic bisnis yang sudah ada; fokus pada UI layer + wiring Livewire.
 
 ---
 
-### 👥 **Peran Pengguna (Roles):**
+## 1) Desain sistem (yang harus kamu tiru)
 
-1. **Guru**
+### A. Pola layout global (semua halaman)
 
-   * Melakukan absen masuk dan pulang
-   * Mengambil foto selfie (validasi wajah)
-   * Lokasi otomatis terekam (GPS)
-   * Melihat riwayat kehadiran pribadi
-   * Mengajukan izin atau sakit online
+Buat “App Shell” dengan struktur ini:
 
-2. **Admin**
+* **Topbar** (fixed/ sticky di atas):
 
-   * Memantau absensi guru secara real-time
-   * Melihat posisi guru di peta (dalam/luar area sekolah)
-   * Melihat laporan dan rekap bulanan
-   * Menyetujui atau menolak izin
-   * Mengekspor laporan ke PDF / Excel
+  * Kiri: logo + teks “PELITA INSANI” + subteks kecil “KB/TK/SD/SMP Nasional Plus”
+  * Kanan: avatar bulat berisi inisial (misal “HA/AS”) + nama (contoh: Hasan / Admin), dan ikon notifikasi (bell) di beberapa halaman.
+  * Background putih, border bawah halus, padding nyaman.
+* **Main content**:
 
----
+  * Background halaman: abu sangat muda dengan kesan gradient lembut.
+  * Konten dibungkus container: `max-w-[430px]` (mobile) dan di desktop tetap center.
+  * Banyak “card” putih rounded besar + shadow halus.
+* **Bottom Navigation** (fixed di bawah):
 
-### 🧩 **Fitur Utama Sistem:**
+  * Bentuk pill/rounded, elevated, background putih.
+  * 5 menu (untuk Guru): Dashboard, Absensi Harian, Riwayat Kehadiran, Lokasi Saya, Pengaturan.
+  * 5 menu (untuk Admin): Dashboard, Data Guru, Rekap Absensi, Notifikasi, Pengaturan.
+  * Icon simple + label kecil, state aktif berwarna biru, non-aktif abu.
 
-1. Validasi Lokasi (Geolocation GPS)
-2. Ambil Foto Saat Absen (Selfie Validation)
-3. Deteksi Wajah Otomatis (Face Recognition)
-4. Mode Offline (data tersimpan lokal sementara)
-5. Rekap Otomatis & Laporan Bulanan
-6. Peta Lokasi Guru (Map Monitoring)
-7. Log Aktivitas Lengkap (Audit Trail)
-8. Sistem Izin & Sakit Online
-9. Notifikasi Real-time ke Admin
-10. Dashboard Analitik Kehadiran
+Buat layout blade utama misalnya:
+
+* `resources/views/layouts/mobile-app.blade.php`
+  yang dipakai semua halaman guru/admin.
 
 ---
 
-### 🗂️ **Struktur Database (ERD Sederhana):**
+## 2) Style guide (harus mirip mockup)
 
-**Tabel Utama:**
+### Warna & feel
 
-* `users` → data guru & admin (id, nama, role, email, password)
-* `absensi` → (id, user_id, tanggal, jam_masuk, jam_pulang, status, lokasi, foto_selfie)
-* `izin` → (id, user_id, jenis, tanggal_mulai, tanggal_selesai, alasan, bukti_file, status)
-* `logs` → (id, user_id, aktivitas, waktu)
-* `settings` → konfigurasi jam absen dan radius lokasi
+* Primary: biru lembut (untuk active tab/nav, highlight, link).
+* Success: hijau (badge hadir, tombol Absen Masuk).
+* Danger: merah (tombol Absen Pulang).
+* Warning: orange (terlambat).
+* Card: putih, radius besar (± 18–24px), shadow halus.
+* Header judul besar tebal.
 
-**Relasi:**
+### Komponen UI wajib dibuat reusable
 
-* `users` 1️⃣—🔁—🗓️ `absensi`
-* `users` 1️⃣—🔁—📄 `izin`
-* `users` 1️⃣—🔁—🕓 `logs`
+Buat komponen Blade (atau Livewire partial) reusable:
 
+1. **Card** (wrapper)
+2. **Stat Card** (angka besar + label, dengan aksen garis warna di sisi kiri seperti mockup)
+3. **Badge** status (Hadir/Izin/Sakit/Terlambat) bentuk capsule kecil.
+4. **Table Card** (judul “Riwayat …” + tabel minimalis)
+5. **Bottom Nav Item** (icon + label, active state)
+6. **Section Title** dengan subtext
 
+Simpan komponen Blade di:
 
+* `resources/views/components/ui/*`
+  atau gunakan Blade components `php artisan make:component`.
 
+---
+
+## 3) Halaman GURU (Livewire pages)
+
+Buat Livewire page components ini (nama bebas tapi konsisten):
+
+1. **Guru Dashboard**
+
+* Headline: “Selamat Datang, {Nama}”
+* Sub: “Dashboard Guru - Sistem Absensi Guru”
+* 2 card kecil sejajar:
+
+  * Card kiri: “Tanggal & Jam” tampilkan tanggal (format “11 Jan 2026”) dan jam.
+  * Card kanan: “Status Hari Ini” (misal “-” kalau belum absen).
+* 2 tombol besar sejajar:
+
+  * **Absen Masuk** (hijau, icon check)
+  * **Absen Pulang** (merah, icon power)
+* Card tabel: “Riwayat Absensi Terakhir”
+
+  * kolom: TANGGAL | JAM MASUK | STATUS
+  * status berupa badge capsule.
+
+2. **Absensi Harian**
+
+* Card filter rentang tanggal (contoh “08 Jan 2026 – 14 Jan 2026”).
+* Tabel: TANGGAL | HARI (contoh Kamis, Jumat, Rabu, Setasa)
+* Link teks “Lihat Riwayat Kehadiran >”
+
+3. **Riwayat Kehadiran**
+
+* 4 stat card kecil: Hadir, Terlambat, Izin, Sakit (angka besar).
+* Card “Riwayat Absensi Terakhir” tabel + badge status.
+
+4. **Lokasi Saya**
+
+* Headline “Lokasi Saya”
+* Area map placeholder (kalau belum integrasi map, bikin card dengan image/placeholder + pin icon).
+* Tombol biru “Mencari lokasi…”
+* Card status hijau muda “Sedang mencari lokasi…”
+
+5. **Pengajuan Izin / Sakit**
+
+* Judul “Pengajuan Izin/Sakit”
+* Tab switcher 2 tombol: IZIN dan SAKIT (segmented control).
+* Form:
+
+  * Tanggal Mulai (date picker)
+  * Tanggal Selesai (date picker)
+* Card “Panduan Pengajuan” bullet list.
+
+6. **Pengaturan**
+
+* List item style:
+
+  * Profil (nama + email)
+  * Pengaturan Akun
+  * Tema & Tampilan (value: “Cerah”)
+  * Laporan & Notifikasi
+  * Bahasa (value: “Bahasa Indonesia”)
+  * Bantuan & Panduan
+* Tombol “Keluar” merah di bawah.
+
+Semua halaman ini harus memakai layout app shell + bottom nav guru.
+
+---
+
+## 4) Halaman ADMIN (Livewire pages)
+
+1. **Admin Dashboard**
+
+* “Selamat Datang, Admin Sekolah”
+* 4 stat card grid 2x2:
+
+  * Total Guru (66)
+  * Hadir Hari Ini (1)
+  * Izin/Sakit (0)
+  * Terlambat (0)
+* 2 card grafik:
+
+  * “Kehadiran Minggu Ini” (bar chart placeholder)
+  * “Persentase Kehadiran” (donut chart placeholder)
+    Jika belum siap chart library, buat placeholder UI yang mirip (kotak grafik + dummy bars + donut SVG sederhana).
+
+2. **Data Guru**
+
+* Tombol “+ Tambah Guru” biru.
+* Table: Nomor ID | Nama Guru | Aksi (icon edit/pencil).
+* Card “Riwayat Absensi Terakhir” di bawah (optional tapi ikut mockup).
+
+3. **Rekap Absensi**
+
+* Date range picker card (contoh “01 – 30 April 2024”).
+* Stat cards:
+
+  * Total Guru, Hadir, Izin/Sakit, Terlambat
+* Card “Statistik Kehadiran Minggu Ini” dengan bar mini + donut “80%”.
+
+4. **Notifikasi**
+
+* Search input “Cari notifikasi…”
+* List notification cards (icon kotak warna + judul + deskripsi + timestamp kecil).
+* Badge count di kanan atas (contoh “3”), bottom nav item notifikasi punya badge merah kecil “1”.
+
+5. **Pengaturan** (sama pola dengan guru tapi label admin).
+
+Semua halaman ini memakai bottom nav admin.
+
+---
+
+## 5) Routing + auth role
+
+* Gunakan middleware `auth`.
+* Tentukan role user (misal `role` di users: `guru` / `admin`).
+* Buat route group:
+
+  * `/guru/*` untuk guru
+  * `/admin/*` untuk admin
+* Setelah login, redirect sesuai role ke dashboard masing-masing.
+
+---
+
+## 6) Implementasi Livewire yang diminta
+
+* Setiap halaman = Livewire component (page).
+* Data tabel boleh dummy dulu tapi strukturnya sudah siap menerima dari DB.
+* State yang wajib:
+
+  * Active bottom-nav item berdasarkan route.
+  * Tab IZIN/SAKIT di halaman pengajuan (Livewire state).
+  * Notifikasi count (dummy ok).
+* Jam di dashboard guru update realtime tiap 1 detik:
+
+  * Pakai Livewire polling ringan (`wire:poll.1s`) atau JS kecil yang tidak bikin flicker.
+
+---
+
+## 7) File & struktur yang harus kamu hasilkan
+
+Wajib buat/ubah (sesuaikan dengan kondisi projectku):
+
+* Tailwind install & config Vite
+* `resources/views/layouts/mobile-app.blade.php`
+* Komponen UI reusable (blade components)
+* Livewire pages untuk semua menu guru/admin
+* Route definitions `routes/web.php`
+* Middleware/redirect role setelah login
+* Pastikan semua halaman memakai typography, spacing, rounded, shadow mirip mockup.
+
+Output akhir: jalankan `npm run dev` + `php artisan serve`, semua halaman tampil rapi.
+
+Mulai dengan: cek struktur projectku dulu, lalu implement bertahap (layout -> komponen UI -> halaman guru -> halaman admin -> routing -> polishing responsive).
 
